@@ -28,15 +28,15 @@ with lmdb.open(database, subdir=False) as env:
                 else:
                     chr, pos= unpack('>cL', key)
                     chr_num=int.from_bytes(chr)
-                    af, beta, se, l_mle, p_lrt= unpack('=fffff', value)
-                    X.append([chr_num, pos, af, beta, se, l_mle, p_lrt])
+                    af, beta, se, l_mle, p_lrt, desc= unpack('=ffffff', value)
+                    X.append([chr_num, pos, af, beta, se, l_mle, p_lrt, desc])
 
 print('The size of the collection is: ', len(X)) # check the size of X
 
 # 2. Convert data into dataframe
 import pandas as pd
 import numpy as np
-new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt'])
+new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc'])
 
 
 # 3. Define training, validation and test sets
@@ -57,7 +57,7 @@ X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=202
 from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
-for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt']:
+for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc']:
     std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
     X_train['transformed_'+ i]=std_scaler1
     del X_train[i]

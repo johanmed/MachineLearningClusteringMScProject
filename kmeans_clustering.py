@@ -9,7 +9,7 @@ KMeans is run twice:
 2. Proceed to actual training and validation on respective data
 
 Save distance of each instance to centroid
-Plot clustering for visualization
+Plot clustering of training data for visualization
 """
 
 
@@ -19,7 +19,7 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_p_lrt (-1) columns
+X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_desc (-1) columns
 X_valid=np.array(X_valid.iloc[:, [1,-1]]) # same
 X_test=np.array(X_test.iloc[:, [1,-1]]) # same
 
@@ -60,9 +60,9 @@ def find_n_clusters(a, b):
     print('The best number of clusters with its silhouette score in that range ', ran, ' is :', best_n_clusters[0])
 
 # 2.1.2. Find the best number of clusters
-find_n_clusters(2, 1000) # can experiment different values
+find_n_clusters(1500, 3000) # can experiment different values but experimentations show that the silhouette score of this model is less than 0.5 when the number of clusters is less than 1000
 
-# 2.2. Run KMeans for the best number of clusters on training and validation and display learning results
+# 2.2. Run KMeans for the best number of clusters on training and display learning results
 
 kmeans=KMeans(n_clusters=best_n_clusters[0][0], algorithm='elkan', random_state=2024)
 kmeans.fit(X_train)
@@ -71,15 +71,14 @@ y_pred=kmeans.predict(X_train)
 #print('The labels assigned to the following validation data \n', X_valid, ' are respectively: \n', y_pred[:5]) # check labels assigned to first 5 validation data
 
 
-
 # 3. Save distance of instances to centroids infered for the best number of clusters
 
 distance_inst_centro= kmeans.transform(X_train).round(2)
-print('The distances to each centroid for the first 5 instances are: ', distance_inst_centro[:5]) # can change to see for more
+print('The distances to each centroid for the first 5 instances are: \n', distance_inst_centro[:5]) # can change to see for more
 
 
 
-# 4. Plot clustering for visualization
+# 4. Plot clustering on training data for visualization
 
 # 4.1. Define functions for plotting data using KMeans
 
@@ -87,7 +86,7 @@ import matplotlib.pyplot as plt # import plot manager
 
 def plot_data(X):
     """
-    plot data according to transformed_pos (1) and transformed_p_lrt (-1)
+    plot data according to transformed_pos (1) and transformed_desc (-1)
     """
     plt.plot(X[:, 0], X[:, 1], 'k.', markersize=2)
     
@@ -121,11 +120,11 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
         plot_centroids(clusterer.cluster_centers_)
         
     if show_xlabels:
-        plt.xlabel("Chromosomal position", fontsize=14)
+        plt.xlabel("Scaled chromosomal position", fontsize=10)
     else:
         plt.tick_params(labelbottom=False)
     if show_ylabels:
-        plt.ylabel("p-value", fontsize=14, rotation=0)
+        plt.ylabel("Scaled p-value", fontsize=10, rotation=0)
     else:
         plt.tick_params(labelleft=False)
         
@@ -133,5 +132,5 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
 
 plt.figure(figsize=(10, 10))
 plot_decision_boundaries(kmeans, X_train)
-plt.savefig("KMeans clustering result")
+plt.savefig("KMeans clustering training result")
 plt.show()
