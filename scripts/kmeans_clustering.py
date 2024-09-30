@@ -15,6 +15,7 @@ Plot clustering of training data for visualization
 
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
+
 from vector_data import X_train, X_valid, X_test
 
 import numpy as np
@@ -60,6 +61,7 @@ def find_n_clusters(a, b):
     print('The best number of clusters with its silhouette score in that range ', ran, ' is :', best_n_clusters[0])
 
 # 2.1.2. Find the best number of clusters
+
 find_n_clusters(2, 2000) # can experiment different values but experimentations show that the silhouette score of this model is less than 0.5 when the number of clusters is less than 1000
 
 # 2.2. Run KMeans for the best number of clusters on training and display learning results
@@ -130,7 +132,10 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
         
 # 4.2. Proceed to plotting
 
+import os
+
 plt.figure(figsize=(10, 10))
 plot_decision_boundaries(kmeans, X_train)
-plt.savefig("Project KMeans clustering training result")
+out_dir=os.path.abspath('../output/')
+plt.savefig(os.path.join(out_dir, "Project KMeans clustering training result"))
 plt.show()

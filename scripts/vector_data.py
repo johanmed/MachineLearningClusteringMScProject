@@ -17,7 +17,9 @@ from struct import * # manage unpacking operations
 
 X=[] # empty array to keep data
 
-database='project.mdb'
+import os
+
+database=os.path.abspath('../data/project.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -34,13 +36,16 @@ with lmdb.open(database, subdir=False) as env:
 print('The size of the collection is: ', len(X)) # check the size of X
 
 # 2. Convert data into dataframe
+
 import pandas as pd
 import numpy as np
 new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc'])
 
 
 # 3. Define training, validation and test sets
+
 from sklearn.model_selection import train_test_split # import utility for splitting
+
 X_train_valid, X_test= train_test_split(new_X, test_size=0.1, random_state=2024)
 X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=2024)
 
@@ -48,12 +53,15 @@ X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=202
 # 4. Plot histogram of training features and assess quality
 
 import matplotlib.pyplot as plt # import plot manager
+
 X_train.hist(bins=50, figsize=(10, 10))
-plt.savefig("Project Quality check before transformation")
+out_dir=os.path.abspath('../output/')
+plt.savefig(os.path.join(out_dir, "Project Quality check before transformation"))
 plt.show()
 
 
 # 5. Perform feature scaling
+
 from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
@@ -72,5 +80,5 @@ for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc']:
 # 6. Plot histogram of transformed training features and confirm quality
 
 X_train.hist(bins=50, figsize=(10, 10))
-plt.savefig("Project Quality check after transformation")
+plt.savefig(os.path.join(out_dir, "Project Quality check after transformation"))
 plt.show()

@@ -71,9 +71,12 @@ def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
 
 # 3.2. Proceed to plotting
 
+import os
+
 plt.figure(figsize=(10, 10))
 plot_dbscan(dbscan, X_train, size=500)
-plt.savefig("Project DBSCAN clustering and Random Forest prediction training result")
+out_dir=os.path.abspath('../output/')
+plt.savefig(os.path.join("Project DBSCAN clustering and Random Forest prediction training result"))
 plt.show()
 
 
