@@ -17,7 +17,7 @@ from struct import * # manage unpacking operations
 
 X=[] # empty array to keep data
 
-database='gemma.mdb'
+database='project.mdb'
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -47,10 +47,10 @@ X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=202
 
 # 4. Plot histogram of training features and assess quality
 
-#import matplotlib.pyplot as plt # import plot manager
-#X_train.hist(bins=50, figsize=(10, 10))
-#plt.savefig("Quality check before transformation")
-#plt.show()
+import matplotlib.pyplot as plt # import plot manager
+X_train.hist(bins=50, figsize=(10, 10))
+plt.savefig("Project Quality check before transformation")
+plt.show()
 
 
 # 5. Perform feature scaling
@@ -71,6 +71,6 @@ for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc']:
 
 # 6. Plot histogram of transformed training features and confirm quality
 
-#X_train.hist(bins=50, figsize=(10, 10))
-#plt.savefig("Quality check after transformation")
-#plt.show()
+X_train.hist(bins=50, figsize=(10, 10))
+plt.savefig("Project Quality check after transformation")
+plt.show()

@@ -15,7 +15,7 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_p_lrt (-1) columns
+X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_desc (-1) columns
 X_valid=np.array(X_valid.iloc[:, [1,-1]]) # same
 X_test=np.array(X_test.iloc[:, [1,-1]]) # same
 
@@ -26,8 +26,8 @@ from sklearn.cluster import DBSCAN # import DBSCAN class for clustering
 
 
 dbscan=DBSCAN()
-dbscan.fit(X_train) # work with transformed_pos and transformed_p_lrt columns only
-#print('The labels for the first 5 training data are: ', dbscan.labels_[:5]) # check labels of first 5 training data
+dbscan.fit(X_train) # work with transformed_pos and transformed_desc columns only
+print('The labels for the first 5 training data are: ', dbscan.labels_[:5]) # check labels of first 5 training data
 
 
 
@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt # import plot manager
 def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
     """
     Display DBSCAN clustering distinguishing, core, non core and anomalies instances
-    Data plotted according to transformed_pos (1) and transformed_p_lrt (-1)
+    Data plotted according to transformed_pos (1) and transformed_desc (-1)
     """
     core_mask=np.zeros_like(dbscan.labels_, dtype=bool)
     core_mask[dbscan.core_sample_indices_]= True
@@ -63,7 +63,7 @@ def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
         plt.tick_params(labelbottom=False)
     
     if show_ylabels:
-        plt.ylabel("Scaled p-value", fontsize=10, rotation=0)
+        plt.ylabel("Scaled trait category", fontsize=10, rotation=0)
     else:
         plt.tick_params(labelleft=False)
     
@@ -71,10 +71,10 @@ def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
 
 # 3.2. Proceed to plotting
 
-#plt.figure(figsize=(10, 10))
-#plot_dbscan(dbscan, X_train, size=500)
-#plt.savefig("DBSCAN clustering and SVM prediction training result")
-#plt.show()
+plt.figure(figsize=(10, 10))
+plot_dbscan(dbscan, X_train, size=500)
+plt.savefig(" Project DBSCAN clustering and SVM prediction training result")
+plt.show()
 
 
 # 4. Run SVC on DBSCAN components and labels for prediction
@@ -116,7 +116,7 @@ def extract_dist(features, labels):
 y_dist=extract_dist(X_valid, dbscan.labels_) # get distances and indices to nearest clusters obtained for training data
 y_pred=sup_vec.predict(X_valid) # get labels for validation data based on nearest cluster
 y_pred[y_dist>0.2]=-1 # detect anomalies by setting maximum distance allowed between instance and nearest cluster to 0.2 (can be changed)
-#print('The labels for the first 5 validation data are: \n', y_pred[:5]) # check labels for the first 5 validation data
+print('The labels for the first 5 validation data are: \n', y_pred[:5]) # check labels for the first 5 validation data
 
 
 
