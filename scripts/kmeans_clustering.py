@@ -20,9 +20,9 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_desc (-1) columns
-X_valid=np.array(X_valid.iloc[:, [1,-1]]) # same
-X_test=np.array(X_test.iloc[:, [1,-1]]) # same
+X_train=np.array(X_train.iloc[: 5000, [0, 2]]) # select transformed_pos (1) and transformed_desc (-1) columns
+X_valid=np.array(X_valid.iloc[: 5000, [0, 2]]) # same
+X_test=np.array(X_test.iloc[: 5000, [0, 2]]) # same
 
 
 # 2. Proceed to KMeans clustering

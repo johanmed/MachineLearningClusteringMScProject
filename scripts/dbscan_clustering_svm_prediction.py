@@ -15,9 +15,9 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[:, [1,-1]]) # select transformed_pos (1) and transformed_desc (-1) columns
-X_valid=np.array(X_valid.iloc[:, [1,-1]]) # same
-X_test=np.array(X_test.iloc[:, [1,-1]]) # same
+X_train=np.array(X_train.iloc[: 5000, [0, 2]]) # select transformed_pos (2) and transformed_desc (0) columns
+X_valid=np.array(X_valid.iloc[: 5000, [0, 2]]) # same
+X_test=np.array(X_test.iloc[: 5000, [0, 2]]) # same
 
 
 
@@ -25,7 +25,7 @@ X_test=np.array(X_test.iloc[:, [1,-1]]) # same
 from sklearn.cluster import DBSCAN # import DBSCAN class for clustering
 
 
-dbscan=DBSCAN()
+dbscan=DBSCAN(eps=0.25)
 dbscan.fit(X_train) # work with transformed_pos and transformed_desc columns only
 print('The labels for the first 5 training data are: ', dbscan.labels_[:5]) # check labels of first 5 training data
 
@@ -63,7 +63,7 @@ def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
         plt.tick_params(labelbottom=False)
     
     if show_ylabels:
-        plt.ylabel("Scaled trait category", fontsize=10, rotation=0)
+        plt.ylabel("Trait category", fontsize=10, rotation=0)
     else:
         plt.tick_params(labelleft=False)
     
@@ -85,8 +85,8 @@ plt.show()
 from sklearn.svm import SVC # import SVC for prediction based on DBSCAN clustering
 
 sup_vec=SVC(kernel='rbf')
-#print(len(X_train))
-#print(len(dbscan.components_))
+print(len(X_train))
+print(len(dbscan.components_))
 #print(sum(dbscan.labels_[dbscan.core_sample_indices_]))
 sup_vec.fit(dbscan.components_, dbscan.labels_[dbscan.core_sample_indices_]) # train Gaussian RBF SVC on data and labels extracted from DBSCAN
 
