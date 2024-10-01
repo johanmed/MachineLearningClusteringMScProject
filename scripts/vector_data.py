@@ -19,7 +19,7 @@ X=[] # empty array to keep data
 
 import os
 
-database=os.path.abspath('../data/project.mdb')
+database=os.path.abspath('../data/real_project.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -28,7 +28,7 @@ with lmdb.open(database, subdir=False) as env:
                 if key==b'meta':
                     continue
                 else:
-                    chr, pos= unpack('>cL', key)
+                    chr, pos, se, l_mle, p_lrt= unpack('>cLfff', key)
                     chr_num=int.from_bytes(chr)
                     af, beta, se, l_mle, p_lrt, desc= unpack('=ffffff', value)
                     X.append([chr_num, pos, af, beta, se, l_mle, p_lrt, desc])
@@ -65,7 +65,7 @@ plt.show()
 from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
-for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc']:
+for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt']:
     std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
     X_train['transformed_'+ i]=std_scaler1
     del X_train[i]
