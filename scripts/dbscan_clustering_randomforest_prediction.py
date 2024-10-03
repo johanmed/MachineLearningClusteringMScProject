@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt # import plot manager
 def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
     """
     Display DBSCAN clustering distinguishing, core, non core and anomalies instances
-    Data plotted according to transformed_pos (1) and transformed_p_lrt (-1)
+    Data plotted according to desc transformed_pos
     """
     core_mask=np.zeros_like(dbscan.labels_, dtype=bool)
     core_mask[dbscan.core_sample_indices_]= True
