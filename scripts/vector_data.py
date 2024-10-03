@@ -19,7 +19,7 @@ X=[] # empty array to keep data
 
 import os
 
-database=os.path.abspath('/home/johannes/Downloads/real_project.mdb')
+database=os.path.abspath('../data/real_project.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
