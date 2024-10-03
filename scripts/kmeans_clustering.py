@@ -62,7 +62,7 @@ def find_n_clusters(a, b):
 
 # 2.1.2. Find the best number of clusters
 
-find_n_clusters(2, 2000) # can experiment different values but experimentations show that the silhouette score of this model is less than 0.5 when the number of clusters is less than 1000
+find_n_clusters(1500, 1700) # can experiment different values but experimentations show that the silhouette score of this model is less than 0.5 when the number of clusters is less than 1000
 
 # 2.2. Run KMeans for the best number of clusters on training and display learning results
 
@@ -122,11 +122,11 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
         plot_centroids(clusterer.cluster_centers_)
         
     if show_xlabels:
-        plt.xlabel("Scaled chromosomal position", fontsize=10)
+        plt.xlabel("Trait category", fontsize=10)
     else:
         plt.tick_params(labelbottom=False)
     if show_ylabels:
-        plt.ylabel("Scaled trait category", fontsize=10, rotation=0)
+        plt.ylabel("Scaled chromosomal position", fontsize=10, rotation=0)
     else:
         plt.tick_params(labelleft=False)
         
