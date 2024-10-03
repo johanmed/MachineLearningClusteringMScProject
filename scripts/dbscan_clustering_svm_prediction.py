@@ -15,9 +15,9 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[: 5000, [0, 2]]) # select transformed_pos (2) and transformed_desc (0) columns
-X_valid=np.array(X_valid.iloc[: 5000, [0, 2]]) # same
-X_test=np.array(X_test.iloc[: 5000, [0, 2]]) # same
+X_train=np.array(X_train.iloc[: 5000, [0, 2, -1]]) # select desc,  transformed_pos and transformed_desc columns
+X_valid=np.array(X_valid.iloc[: 5000, [0, 2, -1]]) # same
+X_test=np.array(X_test.iloc[: 5000, [0, 2, -1]]) # same
 
 
 
@@ -58,12 +58,12 @@ def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
     plt.scatter(non_cores[:, 0], non_cores[:, 1], c=dbscan.labels_[non_core_mask], marker=".")
     
     if show_xlabels:
-        plt.xlabel("Trait category", fontsize=10)
+        plt.xlabel("Trait category", fontsize=20)
     else:
         plt.tick_params(labelbottom=False)
     
     if show_ylabels:
-        plt.ylabel("Scaled chromosomal position", fontsize=10, rotation=0)
+        plt.ylabel("Scaled chromosomal position", fontsize=20, rotation=90)
     else:
         plt.tick_params(labelleft=False)
     

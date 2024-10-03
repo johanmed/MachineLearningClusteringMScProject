@@ -20,7 +20,7 @@ from vector_data import X_train, X_valid, X_test
 
 import numpy as np
 
-X_train=np.array(X_train.iloc[: 5000, [0, 2]]) # select transformed_pos (1) and transformed_desc (-1) columns
+X_train=np.array(X_train.iloc[: 5000, [0, 2]]) # select desc, transformed_pos, and transformed_desc columns
 X_valid=np.array(X_valid.iloc[: 5000, [0, 2]]) # same
 X_test=np.array(X_test.iloc[: 5000, [0, 2]]) # same
 
@@ -58,11 +58,11 @@ def find_n_clusters(a, b):
         if sil_score[i]==max(sil_score.values()):
             best_n_clusters.append([i, sil_score[i]]) # update the best number of clusters
 
-    print('The best number of clusters with its silhouette score in that range ', ran, ' is :', best_n_clusters[0])
+    print('The best number of clusters with its silhouette score in ', ran, ' is :', best_n_clusters[0])
 
 # 2.1.2. Find the best number of clusters
 
-find_n_clusters(1500, 1700) # can experiment different values but experimentations show that the silhouette score of this model is less than 0.5 when the number of clusters is less than 1000
+find_n_clusters(1650, 1700) # can experiment different values but experimentations show that the best silhouette score of this model is within this range
 
 # 2.2. Run KMeans for the best number of clusters on training and display learning results
 
@@ -88,7 +88,7 @@ import matplotlib.pyplot as plt # import plot manager
 
 def plot_data(X):
     """
-    plot data according to transformed_pos (1) and transformed_desc (-1)
+    plot data according to desc and transformed_pos
     """
     plt.plot(X[:, 0], X[:, 1], 'k.', markersize=2)
     
@@ -99,8 +99,8 @@ def plot_centroids(centroids, weights=None, circle_color='w', cross_color='k'):
     """
     if weights is not None:
         centroids=centroids[weights > weights.max()/10]
-    plt.scatter(centroids[:, 0], centroids[:, 1], marker='o', s=35, linewidths=8, color=circle_color, zorder=10, alpha=0.9)
-    plt.scatter(centroids[:, 0], centroids[:, 1], marker='x', s=2, linewidths=12, color=cross_color, zorder=11, alpha=1)
+    plt.scatter(centroids[:, 0], centroids[:, 1], marker='o', s=35, linewidths=8, color=circle_color, zorder=10, alpha=0.4)
+    plt.scatter(centroids[:, 0], centroids[:, 1], marker='x', s=2, linewidths=12, color=cross_color, zorder=11, alpha=0.6)
     
 
 def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True, show_xlabels=True, show_ylabels=True):
@@ -114,7 +114,7 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
     Z=Z.reshape(xx.shape)
     
     plt.contourf(Z, extent=(mins[0], maxs[0], mins[1], maxs[1]), cmap="Pastel2")
-    plt.contour(Z, extent=(mins[0], maxs[0], mins[1], maxs[1]), linewidths=1, colors='k')
+    plt.contour(Z, extent=(mins[0], maxs[0], mins[1], maxs[1]), linewidths=1, colors='k', alpha=0.5)
     
     plot_data(X)
     
@@ -122,11 +122,11 @@ def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True,
         plot_centroids(clusterer.cluster_centers_)
         
     if show_xlabels:
-        plt.xlabel("Trait category", fontsize=10)
+        plt.xlabel("Trait category", fontsize=20)
     else:
         plt.tick_params(labelbottom=False)
     if show_ylabels:
-        plt.ylabel("Scaled chromosomal position", fontsize=10, rotation=0)
+        plt.ylabel("Scaled chromosomal position", fontsize=20, rotation=90)
     else:
         plt.tick_params(labelleft=False)
         
