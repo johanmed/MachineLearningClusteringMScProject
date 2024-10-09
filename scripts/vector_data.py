@@ -19,7 +19,7 @@ X=[] # empty array to keep data
 
 import os
 
-database=os.path.abspath('../data/real_project.mdb')
+database=os.path.abspath('/home/johannes/Downloads/real_project.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -60,25 +60,79 @@ plt.savefig(os.path.join(out_dir, "Project Quality check before transformation")
 plt.show()
 
 
-# 5. Perform feature scaling
+
+# 5. Perform OneHotEncoding of trait category
+
+
+from sklearn.preprocessing import OneHotEncoder
+
+desc_encoder=OneHotEncoder(sparse_output=False)
+
+desc_encoder1=desc_encoder.fit_transform((np.array(X_train['desc'])).reshape(-1, 1))
+X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3']]=desc_encoder1
+
+desc_encoder2=desc_encoder.transform((np.array(X_valid['desc'])).reshape(-1, 1))
+X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3']]=desc_encoder2
+
+desc_encoder3=desc_encoder.transform((np.array(X_test['desc'])).reshape(-1, 1))
+X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3']]=desc_encoder3
+
+
+# 6. Extract clusters using OneHotEncoding categories and p_lrt
+
+from sklearn.cluster import KMeans
+
+prelim1_clustering=KMeans(n_clusters=5, algorithm='elkan', random_state=2024)
+
+prelim1_clustering1=prelim1_clustering.fit_transform(np.array(X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt']]).reshape(-1, 4))
+X_train[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering1
+
+prelim1_clustering2=prelim1_clustering.transform(np.array(X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt']]).reshape(-1, 4))
+X_valid[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering2
+
+prelim1_clustering3=prelim1_clustering.transform(np.array(X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt']]).reshape(-1, 4))
+X_test[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering3
+
+
+# 7. Extract clusters using chr_num and chr_pos
+
+from sklearn.cluster import KMeans
+
+prelim2_clustering=KMeans(n_clusters=5, algorithm='elkan', random_state=2024)
+
+prelim2_clustering1=prelim2_clustering.fit_transform(np.array(X_train[['chr_num', 'pos']]).reshape(-1, 2))
+X_train[['combined_chr_num_pos1', 'combined_chr_num_pos2', 'combined_chr_num_pos3', 'combined_chr_num_pos4', 'combined_chr_num_pos5']]=prelim2_clustering1
+
+prelim2_clustering2=prelim2_clustering.transform(np.array(X_valid[['chr_num', 'pos']]).reshape(-1, 2))
+X_valid[['combined_chr_num_pos1', 'combined_chr_num_pos2', 'combined_chr_num_pos3', 'combined_chr_num_pos4', 'combined_chr_num_pos5']]=prelim2_clustering2
+
+prelim2_clustering3=prelim2_clustering.transform(np.array(X_test[['chr_num', 'pos']]).reshape(-1, 2))
+X_test[['combined_chr_num_pos1', 'combined_chr_num_pos2', 'combined_chr_num_pos3', 'combined_chr_num_pos4', 'combined_chr_num_pos5']]=prelim2_clustering3
+
+
+
+
+# 7. Perform feature engineering
 
 from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
-for i in ['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt']:
+for i in X_train.columns:
     std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
     X_train['transformed_'+ i]=std_scaler1
     del X_train[i]
+    
     std_scaler2=std_scaler.transform((np.array(X_valid[i])).reshape(-1, 1)) # transform validation set
     X_valid['transformed_'+ i]=std_scaler2
     del X_valid[i]
+    
     std_scaler3=std_scaler.transform((np.array(X_test[i])).reshape(-1, 1)) # transform test set
     X_test['transformed_'+ i]=std_scaler3
     del X_test[i]
 
 
-# 6. Plot histogram of transformed training features and confirm quality
+# 8. Plot histogram of transformed training features and confirm quality
 
-X_train.hist(bins=50, figsize=(10, 10))
+X_train.hist(bins=50, figsize=(25, 25))
 plt.savefig(os.path.join(out_dir, "Project Quality check after transformation"))
 plt.show()
