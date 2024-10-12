@@ -118,17 +118,20 @@ from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
 for i in X_train.columns:
-    std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
-    X_train['transformed_'+ i]=std_scaler1
-    del X_train[i]
+    if i=='desc':
+        continue
+    else:
+        std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
+        X_train['transformed_'+ i]=std_scaler1
+        del X_train[i]
     
-    std_scaler2=std_scaler.transform((np.array(X_valid[i])).reshape(-1, 1)) # transform validation set
-    X_valid['transformed_'+ i]=std_scaler2
-    del X_valid[i]
+        std_scaler2=std_scaler.transform((np.array(X_valid[i])).reshape(-1, 1)) # transform validation set
+        X_valid['transformed_'+ i]=std_scaler2
+        del X_valid[i]
     
-    std_scaler3=std_scaler.transform((np.array(X_test[i])).reshape(-1, 1)) # transform test set
-    X_test['transformed_'+ i]=std_scaler3
-    del X_test[i]
+        std_scaler3=std_scaler.transform((np.array(X_test[i])).reshape(-1, 1)) # transform test set
+        X_test['transformed_'+ i]=std_scaler3
+        del X_test[i]
 
 
 # 8. Plot histogram of transformed training features and confirm quality
