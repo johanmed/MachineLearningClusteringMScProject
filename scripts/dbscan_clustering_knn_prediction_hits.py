@@ -6,6 +6,7 @@ This script contains code to run DBSCAN clustering algorithm on data
 Dependencies: vector_data.py -> data
 DBSCAN is run on training data to get clustering
 KNeighborsClassifier is run on clusters extracted by DBSCAN to predict clustering and description or trait category of validation data
+Modelling by hits (chromosome number + marker position)
 """
 
 
@@ -115,7 +116,7 @@ class Columns2Clustering:
         plt.figure(figsize=(10, 10))
         plot_dbscan(dbscan, X_train, size)
         out_dir=os.path.abspath('../output/')
-        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_KNN_prediction_result_{index1}_{index2}"))
+        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_KNN_prediction_result_by_hits_{index1}_{index2}"))
         plt.show()
         
         
@@ -132,6 +133,7 @@ class Columns2Clustering:
         y_clustering_pred=dbscan.labels_[dbscan.core_sample_indices_][y_pred_id] # get labels for validation data based on nearest cluster
         y_clustering_pred[y_dist>0.2]=-1 # detect anomalies by setting maximum distance allowed between instance and nearest cluster to 0.2 (can be changed)
         #print('The labels for the first 5 validation data are: \n', y_pred[:5]) # check labels for the first 5 validation data
+        
         return y_clustering_pred
 
 
@@ -160,7 +162,7 @@ class Columns2Clustering:
         plt.xlabel("Transformed trait category and p-lrt", fontsize=10)
         plt.ylabel("Transformed chromosome number and position", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_KNN_annotation_result_{index1}_{index2}"))
+        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_KNN_annotation_result_by_hits_{index1}_{index2}"))
         plt.show()
 
      
