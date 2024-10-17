@@ -32,13 +32,13 @@ X_test=X_test[['transformed_combined_chr_num_pos1', 'transformed_combined_chr_nu
 
 
 
-# 2. Select the 2 columns to make clustering on
+# 2. Select the 2 columns, do clustering and plot
 
 from sklearn.cluster import DBSCAN # import DBSCAN class for clustering
 import matplotlib.pyplot as plt # import plot manager
 import os
 from sklearn.svm import SVC # import SVC for prediction based on DBSCAN clustering
-from sklearn.multiclass import OneVsRestClassifier
+from sklearn.multiclass import OneVsRestClassifier # import OneVsRestClassifier to define how SVC will perform multiclass classification
 from sklearn.metrics import classification_report
 
 
@@ -116,7 +116,6 @@ class Columns2Clustering:
         """
         plt.figure(figsize=(10, 10))
         plot_dbscan(dbscan, X_train, size)
-        out_dir=os.path.abspath('../output/')
         plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_SVM_prediction_result_by_hits_{index1}_{index2}"))
         plt.show()
         
@@ -127,7 +126,7 @@ class Columns2Clustering:
         Run multiclass SVM on DBSCAN components and labels for prediction
         """
         pred_sup_vec=OneVsRestClassifier(SVC(random_state=2024))
-        pred_sup_vec.fit(dbscan.components_, dbscan.labels_[dbscan.core_sample_indices_]) # train Gaussian RBF SVC on data and labels extracted from DBSCAN
+        pred_sup_vec.fit(dbscan.components_, dbscan.labels_[dbscan.core_sample_indices_]) # train multiclass SVM on data and labels extracted from DBSCAN
 
         def extract_dist(features, labels):
             """
@@ -164,7 +163,7 @@ class Columns2Clustering:
 
 
      
-    def extract_features_target_relationship(X_train, y_train, X_valid):
+    def extract_features_target_relationship(X_train, y_train, X_valid, y_valid):
         """
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
@@ -177,7 +176,7 @@ class Columns2Clustering:
         return y_supervised_pred
 
 
-    def visualize_plot_annotation(X_valid, y_supervised_pred, index1, index2):
+    def visualize_plot_annotation(X_valid, y_supervised_pred, index1, index2, type_anno):
         """
         Regenerate visualization for clustering adding annotation of description or original trait category to each observation
         Save figure
@@ -187,7 +186,7 @@ class Columns2Clustering:
         plt.xlabel("Transformed trait category and p-lrt", fontsize=10)
         plt.ylabel("Transformed chromosome number and position", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_SVM_annotation_result_by_hits_{index1}_{index2}"))
+        plt.savefig(os.path.join(out_dir, f"Project_DBSCAN_clustering_SVM__{type_anno}annotation_result_by_hits_{index1}_{index2}"))
         plt.show()
 
      
@@ -202,8 +201,9 @@ def columns2clustering(index1, index2):
     actual_clustering=clustering_task.perform_dbscan_clustering()
     Columns2Clustering.visualize_plot(Columns2Clustering.plot_dbscan, actual_clustering, datasets[0], index1, index2)
     prediction_clusters=Columns2Clustering.predict_dbscan_clustering(actual_clustering, datasets[1])
-    extracted_annotation=Columns2Clustering.extract_features_target_relationship(datasets[0], y_train, datasets[1])
-    Columns2Clustering.visualize_plot_annotation(datasets[1], extracted_annotation, index1, index2)
+    extracted_annotation=Columns2Clustering.extract_features_target_relationship(datasets[0], y_train, datasets[1], y_valid)
+    Columns2Clustering.visualize_plot_annotation(datasets[1], extracted_annotation, index1, index2, 'predicted')
+    Columns2Clustering.visualize_plot_annotation(datasets[1], y_valid, index1, index2, 'actual')
 
 
 for i in range(1, 6):
