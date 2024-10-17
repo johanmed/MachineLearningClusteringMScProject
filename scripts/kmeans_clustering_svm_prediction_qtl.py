@@ -80,9 +80,9 @@ class Columns2Clustering:
 
         for n_clusters in range(a, b):
             kmeans=KMeans(n_clusters, algorithm='elkan', random_state=2024) # choice of elkan as algorithm made to skip unnecessary calculations and gain ideally in efficiency
-            kmeans.fit(self.training)
+            kmeans.fit(np.array(self.training[[f'transformed_chr_num', f'transformed_combined_desc_p_lrt{self.index}']]))
             #print('The inertia for ', n_clusters, ' clusters is :', kmeans.inertia_) # inertia metrics gives sum of the squared distances between the instances and their closest centroids
-            silhouette=silhouette_score(self.training, kmeans.labels_) # silhouette score is believed to be a better metric to select best number of cluster
+            silhouette=silhouette_score(self.training[[f'transformed_chr_num', f'transformed_combined_desc_p_lrt{self.index}']], kmeans.labels_) # silhouette score is believed to be a better metric to select best number of cluster
             sil_score[n_clusters]=silhouette
             #print('The silhouette score for ', n_clusters, ' clusters is :', silhouette)
     
@@ -100,12 +100,12 @@ class Columns2Clustering:
         Run KMeans for the best number of clusters on training and save predictions and distances to centroids
         """
         kmeans=KMeans(n_clusters=best_n_clusters, algorithm='elkan', random_state=2024)
-        kmeans.fit(self.training)
+        kmeans.fit(np.array(self.training[[f'transformed_chr_num', f'transformed_combined_desc_p_lrt{self.index}']]))
         #print('The labels assigned to the following training data \n', X_train[:5], ' are respectively: \n', kmeans.labels_[:5]) # check labels of first 5 training data
-        y_pred=kmeans.predict(self.validation)
+        y_pred=kmeans.predict(np.array(self.validation[[f'transformed_chr_num', f'transformed_combined_desc_p_lrt{self.index}']]))
         #print('The labels assigned to the following validation data \n', X_valid, ' are respectively: \n', y_pred[:5]) # check labels assigned to first 5 validation data
 
-        distance_inst_centro=kmeans.transform(X_train).round(2) # Save distance of instances to centroids infered for the best number of clusters
+        distance_inst_centro=kmeans.transform(np.array(self.training[[f'transformed_chr_num', f'transformed_combined_desc_p_lrt{self.index}']])).round(2) # Save distance of instances to centroids infered for the best number of clusters
         #print('The distances to each centroid for the first 5 instances are: \n', distance_inst_centro[:5]) # can change to see for more
         
         return kmeans, y_pred, distance_inst_centro
@@ -165,8 +165,11 @@ class Columns2Clustering:
             else:
                 plt.tick_params(labelleft=False)
         
-
-    def visualize_plot(plot_kmeans, clusterer, X_train, index)
+        
+        plot_decision_boundaries(clusterer, X)
+        
+        
+    def visualize_plot(plot_kmeans, clusterer, X_train, index):
         """
         Generate actual visualization of clusters
         Save figure
@@ -174,7 +177,7 @@ class Columns2Clustering:
         
         plt.figure(figsize=(10, 10))
         plot_kmeans(clusterer, X_train)
-        plt.savefig(os.path.join(out_dir, f"Project_KMeans_clustering_SVM_prediction_result_by_qtl_{index}")))
+        plt.savefig(os.path.join(out_dir, f"Project_KMeans_clustering_SVM_prediction_result_by_qtl_{index}"))
         plt.show()
         
         
@@ -212,7 +215,7 @@ def columns2clustering(index):
     """
     clustering_task=Columns2Clustering(X_train, X_valid, X_test, index)
     datasets=clustering_task.get_all_datasets()
-    num_clusters=clustering_task.find_best_n_clusters(10, 1000) # can try out different values
+    num_clusters=clustering_task.find_best_n_clusters(2, 20) # can try out different values
     actual_clustering=clustering_task.perform_kmeans_clustering(num_clusters)
     Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0], datasets[0], index)
     prediction_clusters=actual_clustering[1]
