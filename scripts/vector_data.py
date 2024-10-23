@@ -112,7 +112,7 @@ X_test[['combined_chr_num_pos1', 'combined_chr_num_pos2', 'combined_chr_num_pos3
 
 
 
-# 7. Perform feature engineering
+# 8. Perform feature engineering
 
 from sklearn.preprocessing import StandardScaler # import transformer
 
@@ -123,19 +123,30 @@ for i in X_train.columns:
     else:
         std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
         X_train['transformed_'+ i]=std_scaler1
-        del X_train[i]
     
         std_scaler2=std_scaler.transform((np.array(X_valid[i])).reshape(-1, 1)) # transform validation set
         X_valid['transformed_'+ i]=std_scaler2
-        del X_valid[i]
     
         std_scaler3=std_scaler.transform((np.array(X_test[i])).reshape(-1, 1)) # transform test set
         X_test['transformed_'+ i]=std_scaler3
-        del X_test[i]
 
 
-# 8. Plot histogram of transformed training features and confirm quality
+
+# 9. Plot histogram of transformed training features and confirm quality
 
 X_train.hist(bins=50, figsize=(25, 25))
 plt.savefig(os.path.join(out_dir, "Project Quality check after transformation"))
 plt.show()
+
+
+# 10. Wrap up all transformations in a Transformer and add PCA to 2d for one_hot_desc, p_lrt, chr_num and pos
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
+
+custom_preprocessing=Pipeline([('cluster', KMeans(n_clusters=5, algorithm='elkan', random_state=2024)), ('standardize', StandardScaler()), ('reduce', PCA(n_components=2, random_state=2024))])
+
+preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
+
+preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num'])], remainder=StandardScaler())
