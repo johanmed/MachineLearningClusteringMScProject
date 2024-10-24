@@ -196,23 +196,29 @@ class Columns2Clustering:
 
 # Main
 
-clustering_task=Columns2Clustering(X_train, X_valid, X_test)
+def main():
 
-X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
-actual_clustering=clustering_task.perform_neural_clustering()
+    X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features)
+    actual_clustering=clustering_task.perform_neural_clustering()
 
-Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features)
+    Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features)
 
-prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features)
+    Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features)
 
-extracted_annotation=clustering_task.extract_features_target_relationship(y_train, y_valid)
+    prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features)
 
-Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
+    extracted_annotation=clustering_task.extract_features_target_relationship(y_train, y_valid)
 
-Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
+    Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
+
+    Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
 
 
 
+import timeit
+
+time_taken = timeit.timeit(lambda: main(), number=10)
+print(f"Execution time for deep_learning_clustering_qtl.py is : {time_taken} seconds")

@@ -164,23 +164,32 @@ class Columns2Clustering(ModellingDBSCAN):
      
 # Main
 
-clustering_task=Columns2Clustering(X_train, X_valid, X_test)
+def main():
 
-X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
-actual_clustering=clustering_task.perform_dbscan_clustering()
+    X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-Columns2Clustering.visualize_plot(Columns2Clustering.plot_dbscan, actual_clustering[1], X_train_features)
+    actual_clustering=clustering_task.perform_dbscan_clustering()
 
-prediction_clusters=Columns2Clustering.predict_dbscan_clustering(actual_clustering[1], X_valid_features)
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_dbscan, actual_clustering[1], X_train_features)
 
-extracted_annotation=Columns2Clustering.extract_features_target_relationship(X_train_features, y_train, X_valid_features, y_valid)
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_dbscan, actual_clustering[1], X_valid_features)
 
-Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
+    prediction_clusters=Columns2Clustering.predict_dbscan_clustering(actual_clustering[1], X_valid_features)
 
-Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
+    extracted_annotation=Columns2Clustering.extract_features_target_relationship(X_train_features, y_train, X_valid_features, y_valid)
+
+    Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
+
+    Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
 
         
 
+
+import timeit
+
+time_taken = timeit.timeit(lambda: main(), number=10)
+print(f"Execution time for dbscan_clustering_svm_prediction_qtl.py is : {time_taken} seconds")
 
 
