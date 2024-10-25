@@ -44,12 +44,12 @@ from sklearn.neighbors import KNeighborsClassifier # import KNeighborsClassifier
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
-from general_clustering import ModellingDBSCANHits
+from general_clustering import ModellingDBSCAN
 
 out_dir=os.path.abspath('../output/') # define directory to save plots to
 
 
-class Columns2Clustering(ModellingDBSCANHits):
+class Columns2Clustering(ModellingDBSCAN):
 
     """
     Represent clustering task on only 2 columns extracted from dimensionality reduction
