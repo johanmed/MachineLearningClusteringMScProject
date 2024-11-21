@@ -148,6 +148,8 @@ def main():
     actual_clustering=clustering_task.perform_kmeans_clustering()
 
     Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
+    
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
 
     prediction_clusters=actual_clustering[1]
 

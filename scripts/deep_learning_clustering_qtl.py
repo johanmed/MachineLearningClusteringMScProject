@@ -39,6 +39,8 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from tensorflow.keras.utils import to_categorical
 
+tf.keras.utils.set_random_seed(2024) # set random seed for tf, np and python
+
 
 out_dir=os.path.abspath('../output/') # define directory to save plots to
 
@@ -67,27 +69,24 @@ class Columns2Clustering:
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
 
-    def perform_neural_clustering(self):
+    def perform_neural_clustering(self, reduced_features_train):
         """
         Perform neural clustering on 2 features columns
         """
+        normalization_layer_unsup=tf.keras.layers.Normalization(input_shape=(2,))
         neural_model_unsup=tf.keras.models.Sequential([
-        tf.keras.Input(shape=(2,)),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation='linear'),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.softmax),
+        normalization_layer_unsup,
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=5, activation='softmax'), # number of clusters set to 5 here
         ])
         neural_clustering=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('neural_unsupervised', neural_model_unsup)])
-        neural_clustering[1].compile(optimizer='adam', loss='kld', metrics=['accuracy'])
-        neural_clustering.fit(self.training, y_train, neural_unsupervised__epochs=50)
+        neural_clustering[1].compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        normalization_layer_unsup.adapt(np.array(reduced_features_train))
+        neural_clustering.fit(self.training, y_train, neural_unsupervised__epochs=10, neural_unsupervised__batch_size=1000)
         #print('The labels for the first 5 training data are: ', dbscan_clustering.labels_[:5]) # check labels of first 5 training data
 
         return neural_clustering
@@ -124,38 +123,26 @@ class Columns2Clustering:
         """
         y_pred_unsup_valid=neural_clustering.predict(X_valid)
         
-        clusters_unsup_valid=[]
-        for i in y_pred_unsup_valid:
-            temp=[]
-            for (x,y) in enumerate(i):
-                if y==max(i):
-                    temp.append(x)
-            clusters_unsup_valid.append(temp[0])
-        
         #print('The labels for the first 5 validation data are: \n', y_pred_unsup_valid[:5]) # check labels for the first 5 validation data
         
         return y_pred_unsup_valid
 
 
      
-    def extract_features_target_relationship(self, y_train, y_valid):
+    def extract_features_target_relationship(self, reduced_features_train, y_train, y_valid):
         """
         Find relationships between 2 columns selected (features) and description (target) using neural networks
         Assign to each observation a description to know the type of trait -> supervised learning
         """
+        normalization_layer_sup=tf.keras.layers.Normalization(input_shape=(2,))
         neural_model_sup=tf.keras.models.Sequential([
-        tf.keras.Input(shape=(2,)),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=5, activation=tf.nn.relu),
-        tf.keras.layers.Dense(units=3, activation=tf.nn.softmax),
+        normalization_layer_sup,
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(units=10, activation='relu'),
+        tf.keras.layers.Dense(1),
         ])
         
         
@@ -168,10 +155,10 @@ class Columns2Clustering:
 
 
         neural_assign=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('neural_supervised', neural_model_sup)])
-        neural_assign[1].compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        neural_assign.fit(self.training, y_train, neural_supervised__epochs=50)
+        neural_assign[1].compile(optimizer='adam', loss='mse', metrics=['RootMeanSquaredError'])
+        normalization_layer_sup.adapt(np.array(reduced_features_train))
+        neural_assign.fit(self.training, y_train, neural_supervised__epochs=10, neural_supervised__batch_size=1000)
         y_supervised_pred=neural_assign.predict(self.validation)
-        
         
         #print('The prediction for the first 5 validation data is :', y_pred[:5])
         
@@ -202,7 +189,7 @@ def main():
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-    actual_clustering=clustering_task.perform_neural_clustering()
+    actual_clustering=clustering_task.perform_neural_clustering(X_train_features)
 
     Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features)
 
@@ -210,7 +197,7 @@ def main():
 
     prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features)
 
-    extracted_annotation=clustering_task.extract_features_target_relationship(y_train, y_valid)
+    extracted_annotation=clustering_task.extract_features_target_relationship(X_train_features, y_train, y_valid)
 
     Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
 
