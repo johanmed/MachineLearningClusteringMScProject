@@ -36,7 +36,7 @@ X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_
 
 # 2. Select the 2 columns, do clustering and plot
 
-from sklearn.cluster import DBSCAN # import DBSCAN class for clustering
+from sklearn.cluster import OPTICS # import OPTICS class for DBSCAN clustering
 import matplotlib.pyplot as plt # import plot manager
 import os
 from sklearn.ensemble import RandomForestClassifier # import RandomForestClassifier
@@ -70,7 +70,7 @@ class Columns2Clustering(ModellingDBSCAN):
         """
         Perform DBSCAN clustering on 2 features columns
         """
-        dbscan_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('dbscan', DBSCAN(eps=0.25))])
+        dbscan_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('optics_dbscan', OPTICS(cluster_method='dbscan'))])
         dbscan_clustering.fit(self.training) # work with 2 features provided
         #print('The labels for the first 5 training data are: ', dbscan_clustering.labels_[:5]) # check labels of first 5 training data
         

@@ -70,7 +70,7 @@ class Columns2Clustering(ModellingDBSCAN):
         """
         Perform DBSCAN clustering on 2 features columns
         """
-        dbscan_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('optics', OPTICS(cluster_method='dbscan'))])
+        dbscan_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('optics_dbscan', OPTICS(cluster_method='dbscan'))])
         dbscan_clustering.fit(self.training) # work with 2 features provided
         #print('The labels for the first 5 training data are: ', dbscan_clustering.labels_[:5]) # check labels of first 5 training data
         
