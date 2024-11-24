@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
     
-class ModellingDBSCAN:
+class ModellingBirch:
 
     """
     Represent ML operations using DBSCAN by hits
@@ -17,24 +17,20 @@ class ModellingDBSCAN:
         self.validation=validation
         self.test=test
         
-    
-    def plot_dbscan(dbscan, X, size, show_xlabels=True, show_ylabels=True):
+
+    def plot_birch(clusterer, X, size, show_xlabels=True, show_ylabels=True):
         """
-        Display DBSCAN clustering distinguishing, core, non core and anomalies instances
+        Display Birch clustering distinguishing, core, non core and anomalies instances
         Data plotted according to 2 features provided
         """
-        core_mask=np.zeros_like(dbscan.labels_, dtype=bool)
-        core_mask[dbscan.core_sample_indices_]= True
-        anomalies_mask=dbscan.labels_== -1
-        non_core_mask= ~(core_mask | anomalies_mask)
-        cores=dbscan.components_
+        new_labels=clusterer.predict(X)
+        anomalies_mask=new_labels== -1
+        cores=clusterer.subcluster_centers_
         anomalies=X[anomalies_mask]
-        non_cores=X[non_core_mask]
     
-        plt.scatter(cores[:, 0], cores[:, 1], c=dbscan.labels_[core_mask], marker='o', s=size, cmap="Paired")
-        plt.scatter(cores[:, 0], cores[:, 1], marker='*', s=20, c=dbscan.labels_[core_mask])
+        plt.scatter(X[:, 0], X[:, 1], c=new_labels, marker='o', s=size, cmap='Paired')
+        plt.scatter(cores[:, 0], cores[:, 1], marker='*', s=100, c='b')
         plt.scatter(anomalies[:, 0], anomalies[:, 1], c="r", marker="x", s=100)
-        plt.scatter(non_cores[:, 0], non_cores[:, 1], c=dbscan.labels_[non_core_mask], marker=".")
     
         if show_xlabels:
             plt.xlabel("PCA 1", fontsize=10)
@@ -61,6 +57,7 @@ class ModellingKMeans:
         self.training=training
         self.validation=validation
         self.test=test
+        
         
     def plot_decision_boundaries(clusterer, X, resolution=1000, show_centroids=True, show_xlabels=True, show_ylabels=True):
         """

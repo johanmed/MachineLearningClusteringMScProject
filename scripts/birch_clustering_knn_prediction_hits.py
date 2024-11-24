@@ -2,15 +2,13 @@
 
 """
 Summary:
-This script contains code to run KMeans clustering algorithm on data
-Dependencies:
+This script contains code to run DBSCAN clustering algorithm on data
+Dependencies: 
 - vector_data.py -> data, preprocessing_hits
-- general_clustering -> ModellingKMeans
-KMeans is run twice:
-1. Identify the best number of clusters for the data using the training data
-2. Proceed to actual training and validation on respective data
-SupportVectorMachine is run to predict description or trait category of validation data
-Modelling by hits (chromosome number + chromosomal position)
+- general_clustering -> ModellingDBSCANHits
+DBSCAN is run on training data to get clustering
+KNeighborsClassifier is run on clusters extracted by DBSCAN to predict clustering and description or trait category of validation data
+Modelling by hits (chromosome number + marker position)
 """
 
 
@@ -35,28 +33,26 @@ X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_
 
 
 
+
 # 2. Select the 2 columns, do clustering and plot
 
-from sklearn.cluster import KMeans # import KMeans class
-from sklearn.metrics import silhouette_score # import silhouette_score class
+from sklearn.cluster import Birch # import Birch class for clustering
 import matplotlib.pyplot as plt # import plot manager
 import os
-from sklearn.linear_model import SGDClassifier # import SGDClassifer for prediction based on DBSCAN clustering
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier # import KNeighborsClassifier for prediction based on DBSCAN clustering
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
-from general_clustering import ModellingKMeans
-
+from general_clustering import ModellingBirch
 
 out_dir=os.path.abspath('../output/') # define directory to save plots to
 
 
-
-
-class Columns2Clustering(ModellingKMeans):
+class Columns2Clustering(ModellingBirch):
 
     """
-    Represent clustering task on only 2 features extracted from dimensionality reduction
+    Represent clustering task on only 2 columns extracted from dimensionality reduction
     """
     
     def get_features(self):
@@ -70,54 +66,42 @@ class Columns2Clustering(ModellingKMeans):
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
 
-    def perform_kmeans_clustering(self):
+    def perform_birch(self):
         """
-        Run KMeans for number of clusters on training and save predictions and distances to centroids
+        Perform Birch clustering on 2 features columns
         """
-        kmeans_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('kmeans', KMeans(algorithm='elkan', random_state=2024))])
-        kmeans_clustering.fit(self.training)
-        #print('The labels assigned to the following training data \n', X_train[:5], ' are respectively: \n', kmeans.labels_[:5]) # check labels of first 5 training data
-        y_pred=kmeans_clustering.predict(self.validation)
-        #print('The labels assigned to the following validation data \n', X_valid, ' are respectively: \n', y_pred[:5]) # check labels assigned to first 5 validation data
-
-        distance_inst_centro=kmeans_clustering.transform(self.training).round(2) # Save distance of instances to centroids infered for the best number of clusters
-        #print('The distances to each centroid for the first 5 instances are: \n', distance_inst_centro[:5]) # can change to see for more
+        birch_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('birch', Birch())])
+        birch_clustering.fit(self.training) # work with 2 features provided
+        #print('The labels for the first 5 training data are: ', birch_clustering.labels_[:5]) # check labels of first 5 training data
         
-        return kmeans_clustering, y_pred, distance_inst_centro
-
-
-
-    def plot_kmeans(clusterer, X, plot_decision_boundaries):
-        """
-        Plot clusters extracted by KMeans
-        """
-                
-        plot_decision_boundaries(clusterer, X)
+        y_pred=birch_clustering.predict(self.validation)
         
-        
-    def visualize_plot(plot_kmeans, clusterer, X_train):
+        return birch_clustering, y_pred
+    
+    
+    
+    def visualize_plot(plot_birch, birch_clustering, X_train, size=200):
         """
         Generate actual visualization of clusters
         Save figure
         """
-        
         plt.figure(figsize=(10, 10))
-        plot_kmeans(clusterer, X_train, Columns2Clustering.plot_decision_boundaries)
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SVM_prediction_result_by_hits"))
+        plot_birch(birch_clustering, X_train, size)
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_BIRCH_clustering_KNN_prediction_result_by_hits"))
         plt.show()
         
-        
+
+     
     def extract_features_target_relationship(X_train, y_train, X_valid, y_valid):
         """
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
         """
-        assign_vec=SGDClassifier(random_state=2024)
-        assign_vec.fit(X_train, y_train)
-        y_supervised_pred=assign_vec.predict(X_valid)
+        assign_knn=KNeighborsClassifier()
+        assign_knn.fit(X_train, y_train)
+        y_supervised_pred=assign_knn.predict(X_valid)
         #print('The prediction for the first 5 validation data is :', y_pred[:5])
         print(classification_report(y_valid, y_supervised_pred))
-        
         return y_supervised_pred
 
 
@@ -131,9 +115,10 @@ class Columns2Clustering(ModellingKMeans):
         plt.xlabel("PCA 1", fontsize=10)
         plt.ylabel("PCA 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SVM_{type_anno}_annotation_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_BIRCH_clustering_KNN_{type_anno}_annotation_result_by_hits"))
         plt.show()
 
+     
 
 
 # Main
@@ -144,11 +129,11 @@ def main():
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-    actual_clustering, prediction_clusters_valid, distances_centroids_validation=clustering_task.perform_kmeans_clustering()
+    actual_clustering, prediction_clusters_valid=clustering_task.perform_birch()
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[1], X_train_features)
-    
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[1], X_valid_features)
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
+
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_valid_features)
 
     extracted_annotation=Columns2Clustering.extract_features_target_relationship(X_train_features, y_train, X_valid_features, y_valid)
 
@@ -159,8 +144,7 @@ def main():
 
 
 
-
 import timeit
 
 time_taken = timeit.timeit(lambda: main(), number=10)
-print(f"Execution time for kmeans_clustering_svm_prediction_hits.py is : {time_taken} seconds")
+print(f"Execution time for dbscan_clustering_knn_prediction_hits.py is : {time_taken} seconds")
