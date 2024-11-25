@@ -5,9 +5,9 @@ Summary:
 This script contains code to run DBSCAN clustering algorithm on data
 Dependencies: 
 - vector_data.py -> data, preprocessing_hits
-- general_clustering -> ModellingDBSCAN
-DBSCAN is run on training data to get clustering
-RandomForestClassifier is run on clusters extracted by DBSCAN to predict clustering and description or trait category of validation data
+- general_clustering -> ModellingBirch
+Birch is run on training data to get clustering
+RandomForestClassifier is run on clusters extracted by Birch to predict clustering and description or trait category of validation data
 Modelling by hits (chromosome number + marker position)
 """
 
@@ -113,8 +113,8 @@ class Columns2Clustering(ModellingBirch):
         """
         plt.figure(figsize=(10, 10))
         plt.scatter(X_valid[:, 0], X_valid[:, 1], c=y_supervised_pred)
-        plt.xlabel("PCA 1", fontsize=10)
-        plt.ylabel("PCA 2", fontsize=10, rotation=90)
+        plt.xlabel("PC 1", fontsize=10)
+        plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
         plt.savefig(os.path.join(out_dir, f"Project_PCA_BIRCH_clustering_RandomForest_{type_anno}_annotation_result_by_hits"))
         plt.show()

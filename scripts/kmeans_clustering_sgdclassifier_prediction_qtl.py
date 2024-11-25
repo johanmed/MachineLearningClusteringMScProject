@@ -9,7 +9,7 @@ Dependencies:
 KMeans is run twice:
 1. Identify the best number of clusters for the data using the training data
 2. Proceed to actual training and validation on respective data
-SupportVectorMachine is run to predict description or trait category of validation data
+SGDClassifier is run to predict description or trait category of validation data
 Modelling by QTL (chromosome number)
 """
 
@@ -41,8 +41,7 @@ from sklearn.cluster import KMeans # import KMeans class
 from sklearn.metrics import silhouette_score # import silhouette_score class
 import matplotlib.pyplot as plt # import plot manager
 import os
-from sklearn.svm import SVC # import SVC for prediction based on DBSCAN clustering
-from sklearn.multiclass import OneVsRestClassifier # import OneVsRestClassifier to define how SVC will perform multiclass classification
+from sklearn.linear_model import SGDClassifier # import SGDClassifer for prediction based on DBSCAN clustering
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
@@ -113,9 +112,9 @@ class Columns2Clustering(ModellingKMeans):
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
         """
-        assign_sup_vec=OneVsRestClassifier(SVC(random_state=2024))
-        assign_sup_vec.fit(X_train, y_train)
-        y_supervised_pred=assign_sup_vec.predict(X_valid)
+        assign_vec=SGDClassifier(random_state=2024)
+        assign_vec.fit(X_train, y_train)
+        y_supervised_pred=assign_vec.predict(X_valid)
         #print('The prediction for the first 5 validation data is :', y_pred[:5])
         print(classification_report(y_valid, y_supervised_pred))
         
@@ -129,10 +128,10 @@ class Columns2Clustering(ModellingKMeans):
         """
         plt.figure(figsize=(10, 10))
         plt.scatter(X_valid[:, 0], X_valid[:, 1], c=y_supervised_pred)
-        plt.xlabel("PCA 1", fontsize=10)
-        plt.ylabel("PCA 2", fontsize=10, rotation=90)
+        plt.xlabel("PC 1", fontsize=10)
+        plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SVM_{type_anno}_annotation_result_by_qtl"))
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SGD_{type_anno}_annotation_result_by_qtl"))
         plt.show()
 
 

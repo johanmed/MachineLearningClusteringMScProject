@@ -129,8 +129,8 @@ class Columns2Clustering (ModellingKMeans):
         """
         plt.figure(figsize=(10, 10))
         plt.scatter(X_valid[:, 0], X_valid[:, 1], c=y_supervised_pred)
-        plt.xlabel("PCA 1", fontsize=10)
-        plt.ylabel("PCA 2", fontsize=10, rotation=90)
+        plt.xlabel("PC 1", fontsize=10)
+        plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
         plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_RandomForest_{type_anno}_annotation_result_by_qtl"))
         plt.show()

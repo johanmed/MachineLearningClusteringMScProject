@@ -33,12 +33,12 @@ class ModellingBirch:
         plt.scatter(anomalies[:, 0], anomalies[:, 1], c="r", marker="x", s=100)
     
         if show_xlabels:
-            plt.xlabel("PCA 1", fontsize=10)
+            plt.xlabel("PC 1", fontsize=10)
         else:
             plt.tick_params(labelbottom=False)
     
         if show_ylabels:
-            plt.ylabel("PCA 2", fontsize=10, rotation=90)
+            plt.ylabel("PC 2", fontsize=10, rotation=90)
         else:
             plt.tick_params(labelleft=False)
     
@@ -99,11 +99,11 @@ class ModellingKMeans:
             plot_centroids(clusterer.cluster_centers_)
         
         if show_xlabels:
-            plt.xlabel("PCA 1", fontsize=20)
+            plt.xlabel("PC 1", fontsize=20)
         else:
             plt.tick_params(labelbottom=False)
         if show_ylabels:
-            plt.ylabel("PCA 2", fontsize=20, rotation=90)
+            plt.ylabel("PC 2", fontsize=20, rotation=90)
         else:
             plt.tick_params(labelleft=False)
 

@@ -9,7 +9,7 @@ Dependencies:
 KMeans is run twice:
 1. Identify the best number of clusters for the data using the training data
 2. Proceed to actual training and validation on respective data
-RandomForestClassifier is run to predict description or trait category of validation data
+SGDClassifier is run to predict description or trait category of validation data
 Modelling by hits (chromosome number + chromosomal position)
 """
 
@@ -41,7 +41,7 @@ from sklearn.cluster import KMeans # import KMeans class
 from sklearn.metrics import silhouette_score # import silhouette_score class
 import matplotlib.pyplot as plt # import plot manager
 import os
-from sklearn.ensemble import RandomForestClassifier # import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier # import SGDClassifer for prediction based on DBSCAN clustering
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
@@ -94,8 +94,7 @@ class Columns2Clustering(ModellingKMeans):
                 
         plot_decision_boundaries(clusterer, X)
         
-
-
+        
     def visualize_plot(plot_kmeans, clusterer, X_train):
         """
         Generate actual visualization of clusters
@@ -104,7 +103,7 @@ class Columns2Clustering(ModellingKMeans):
         
         plt.figure(figsize=(10, 10))
         plot_kmeans(clusterer, X_train, Columns2Clustering.plot_decision_boundaries)
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_RandomForest_prediction_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SVM_prediction_result_by_hits"))
         plt.show()
         
         
@@ -113,9 +112,9 @@ class Columns2Clustering(ModellingKMeans):
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
         """
-        assign_rand_for=RandomForestClassifier(random_state=2024)
-        assign_rand_for.fit(X_train, y_train)
-        y_supervised_pred=assign_rand_for.predict(X_valid)
+        assign_vec=SGDClassifier(random_state=2024)
+        assign_vec.fit(X_train, y_train)
+        y_supervised_pred=assign_vec.predict(X_valid)
         #print('The prediction for the first 5 validation data is :', y_pred[:5])
         print(classification_report(y_valid, y_supervised_pred))
         
@@ -132,7 +131,7 @@ class Columns2Clustering(ModellingKMeans):
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_RandomForest_{type_anno}_annotation_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_SGD_{type_anno}_annotation_result_by_hits"))
         plt.show()
 
 
@@ -145,15 +144,11 @@ def main():
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-    actual_clustering=clustering_task.perform_kmeans_clustering()
+    actual_clustering, prediction_clusters_valid, distances_centroids_validation=clustering_task.perform_kmeans_clustering()
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
-
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
-
-    prediction_clusters=actual_clustering[1]
-
-    distances_centroids_validation=actual_clustering[2]
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[1], X_train_features)
+    
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[1], X_valid_features)
 
     extracted_annotation=Columns2Clustering.extract_features_target_relationship(X_train_features, y_train, X_valid_features, y_valid)
 
@@ -164,7 +159,8 @@ def main():
 
 
 
+
 import timeit
 
 time_taken = timeit.timeit(lambda: main(), number=10)
-print(f"Execution time for kmeans_clustering_randomforest_prediction_hits.py is : {time_taken} seconds")
+print(f"Execution time for kmeans_clustering_svm_prediction_hits.py is : {time_taken} seconds")
