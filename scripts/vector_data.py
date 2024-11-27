@@ -57,7 +57,6 @@ import matplotlib.pyplot as plt # import plot manager
 X_train.hist(bins=50, figsize=(10, 10))
 out_dir=os.path.abspath('../output/')
 plt.savefig(os.path.join(out_dir, "Project Quality check before transformation"))
-plt.show()
 
 
 
@@ -136,7 +135,6 @@ for i in X_train.columns:
 
 X_train.hist(bins=50, figsize=(25, 25))
 plt.savefig(os.path.join(out_dir, "Project Quality check after transformation"))
-plt.show()
 
 
 # 10. Wrap up all transformations in a Transformer and add PCA to 2d for one_hot_desc, p_lrt, chr_num and pos

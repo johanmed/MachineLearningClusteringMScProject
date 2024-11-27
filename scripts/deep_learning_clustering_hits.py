@@ -37,6 +37,9 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import silhouette_score
+from random import choice
+
 from tensorflow.keras.utils import to_categorical
 
 tf.keras.utils.set_random_seed(2024) # set random seed for tf, np and python
@@ -88,96 +91,59 @@ class Columns2Clustering:
         normalization_layer_unsup.adapt(np.array(reduced_features_train))
         neural_clustering.fit(self.training, y_train, neural_unsupervised__epochs=10, neural_unsupervised__batch_size=1000)
         #print('The labels for the first 5 training data are: ', dbscan_clustering.labels_[:5]) # check labels of first 5 training data
-
+        
         return neural_clustering
     
     
     
-    def visualize_plot(neural_clustering, X_train, size=500):
+    def get_clusters_labels(raw_predictions_proba):
+    
+        """
+        Loop through output dimensions and select the cluster with the highest probability
+        """
+        clusters_unsup=[]
+        for i in raw_predictions_proba:
+            temp=[]
+            for (x,y) in enumerate(i):
+                if y==max(i):
+                    temp.append(x)
+            clusters_unsup.append(choice(temp))
+        
+        return clusters_unsup
+    
+    
+    
+    def visualize_plot(neural_clustering, X_train, get_clusters_labels, size=500):
         """
         Generate actual visualization of clusters
         Save figure
         """
         y_pred_unsup_train=neural_clustering.predict(X_train)
+        #print('The probabilities of clusters assignment are: ', y_pred_unsup_train[:10])
         
-        clusters_unsup_train=[]
-        for i in y_pred_unsup_train:
-            temp=[]
-            for (x,y) in enumerate(i):
-                if y==max(i):
-                    temp.append(x)
-            clusters_unsup_train.append(temp[0])
+        clusters_unsup_train=get_clusters_labels(y_pred_unsup_train)
+        
+        #print('The silhouette score obtained as clustering performance measure on training set is:', silhouette_score(X_train, clusters_unsup_train))
         
         plt.figure(figsize=(10, 10))
         plt.scatter(X_train[:, 0], X_train[:, 1], c=clusters_unsup_train)
-        plt.xlabel("PCA 1", fontsize=10)
-        plt.ylabel("PCA 2", fontsize=10, rotation=90)
+        plt.xlabel("PC 1", fontsize=10)
+        plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.savefig(os.path.join(out_dir, f"Project_PCA_neural_clustering_result_by_hits"))
-        plt.show()
         
         
      
-    def predict_neural_clustering(neural_clustering, X_valid):
+    def predict_neural_clustering(neural_clustering, X_valid, get_clusters_labels):
         """
         Use neural networks to predict clustering on validation set
         """
         y_pred_unsup_valid=neural_clustering.predict(X_valid)
         
-        #print('The labels for the first 5 validation data are: \n', y_pred_unsup_valid[:5]) # check labels for the first 5 validation data
+        clusters_unsup_valid=get_clusters_labels(y_pred_unsup_valid)
         
-        return y_pred_unsup_valid
-
-
-     
-    def extract_features_target_relationship(self, reduced_features_train, y_train, y_valid):
-        """
-        Find relationships between 2 columns selected (features) and description (target) using neural networks
-        Assign to each observation a description to know the type of trait -> supervised learning
-        """
-        normalization_layer_sup=tf.keras.layers.Normalization(input_shape=(2,))
-        neural_model_sup=tf.keras.models.Sequential([
-        normalization_layer_sup,
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(1),
-        ])
+        #print('The silhouette score obtained as clustering performance measure on validation set is:', silhouette_score(X_valid, clusters_unsup_valid))
         
-        
-        # Convert target variables to one-hot encoded format
-
-        y_train = to_categorical(y_train, num_classes=3)
-
-        y_valid = to_categorical(y_valid, num_classes=3)
-
-
-
-        neural_assign=Pipeline([('preprocessing_hits', preprocessing_hits), ('neural_supervised', neural_model_sup)])
-        neural_assign[1].compile(optimizer='adam', loss='mse', metrics=['RootMeanSquaredError'])
-        normalization_layer_sup.adapt(np.array(reduced_features_train))
-        neural_assign.fit(self.training, y_train, neural_supervised__epochs=10, neural_supervised__batch_size=1000)
-        y_supervised_pred=neural_assign.predict(self.validation)
-        
-        #print('The prediction for the first 5 validation data is :', y_pred[:5])
-        
-        return y_supervised_pred
-
-
-    def visualize_plot_annotation(X_valid, y_supervised_pred, type_anno):
-        """
-        Regenerate visualization for clustering adding annotation of description or original trait category to each observation
-        Save figure
-        """
-        plt.figure(figsize=(10, 10))
-        plt.scatter(X_valid[:, 0], X_valid[:, 1], c=y_supervised_pred)
-        plt.xlabel("PCA 1", fontsize=10)
-        plt.ylabel("PCA 2", fontsize=10, rotation=90)
-        plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_neural_clustering_{type_anno}_annotation_result_by_hits"))
-        plt.show()
-
+        return clusters_unsup_valid
      
 
 
@@ -191,23 +157,15 @@ def main():
 
     actual_clustering=clustering_task.perform_neural_clustering(X_train_features)
 
-    Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features)
+    Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 
-    Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features)
+    Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features, Columns2Clustering.get_clusters_labels)
 
-    prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features)
-
-    extracted_annotation=clustering_task.extract_features_target_relationship(X_train_features, y_train, y_valid)
-
-    Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
-
-    Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
-
-
+    prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features, Columns2Clustering.get_clusters_labels)
 
 
 
 import timeit
 
-time_taken = timeit.timeit(lambda: main(), number=10)
+time_taken = timeit.timeit(lambda: main(), number=5)
 print(f"Execution time for deep_learning_clustering_hits.py is : {time_taken} seconds")
