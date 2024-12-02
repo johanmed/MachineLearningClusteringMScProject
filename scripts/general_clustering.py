@@ -129,7 +129,7 @@ class ModellingGaussian:
         mins = X.min(axis=0) - 0.1
         maxs = X.max(axis=0) + 0.1
         xx, yy = np.meshgrid(np.linspace(mins[0], maxs[0], resolution), np.linspace(mins[1], maxs[1], resolution))
-        Z = clusterer.score_samples(np.c_[xx.ravel(), yy.ravel()])
+        Z = -clusterer.score_samples(np.c_[xx.ravel(), yy.ravel()])
         Z = Z.reshape(xx.shape)
 
         plt.contourf(xx, yy, Z, norm=LogNorm(vmin=1.0, vmax=30.0), levels=np.logspace(0, 2, 12))
