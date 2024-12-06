@@ -13,6 +13,7 @@ Modelling by qtl (chromosome number)
 from vector_data import X_train, X_valid, X_test, preprocessing_qtl
 
 import numpy as np
+import pandas as pd
 
 y_train=X_train['desc']
 
@@ -48,6 +49,12 @@ class Annotation():
     """
     Represents annotation operations
     """
+    
+    def __init__(self, training, validation, test):
+        self.training=training
+        self.validation=validation
+        self.test=test
+    
     
     def get_features(self):
         """

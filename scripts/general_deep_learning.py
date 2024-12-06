@@ -4,7 +4,8 @@
 This script contains deep learning finetuning classes for clustering and annotation
 """
 
-
+import tensorflow as tf
+from tensorflow.keras.utils import to_categorical
 import keras_tuner as kt
 
 
@@ -89,16 +90,32 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         output_layer=tf.keras.layers.Dense(1)
         
         layers={}
-        layers['input_unsup']=tf.keras.layers.Input(shape=(2,))
+        layers['input_sup']=tf.keras.layers.Input(shape=(2,))
         
         for k in hidden_layers_dict:
             layers[f'hidden{k}']=hidden_layers_dict[k](layers[list(layers.keys())[-1]])
-        layers['concatenated']=concat_layer([layers['input_unsup'], layers[list(layers.keys())[-1]]])
-        layers['output_unsup']=output_layer(layers['concatenated'])
+        layers['concatenated']=concat_layer([layers['input_sup'], layers[list(layers.keys())[-1]]])
+        layers['output_sup']=output_layer(layers['concatenated'])
         
-        neural_model_sup=tf.keras.Model(inputs=[layers['input_unsup']], outputs=[layers['output_unsup']])
+        neural_model_sup=tf.keras.Model(inputs=[layers['input_sup']], outputs=[layers['output_sup']])
         
         neural_model_sup.compile(optimizer=optimizer, loss='mse', metrics=['RootMeanSquaredError'])
         
         return neural_model_sup
+
+
+    def fit(self, hp, neural_model_sup, X, y, **kwargs):
+        """
+        Finetuning of second preprocessing (normalization) and fit parameters
+        """
+        batch_size=hp.Int('batch_size', min_value=10, max_value=2000)
+        
+        if hp.Boolean('normalize'):
+            normalization_layer=tf.keras.layers.Normalization()
+            X=normalization_layer(X)
+        
+        y = to_categorical(y, num_classes=3)
+        
+        return neural_model_sup.fit(X, y, batch_size=batch_size, **kwargs)
+
 

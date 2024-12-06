@@ -15,15 +15,15 @@ import pandas as pd
 
 y_train=X_train['desc']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 y_valid=X_valid['desc']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 y_test=X_test['desc']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
@@ -38,6 +38,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report
 from tensorflow.keras.utils import to_categorical
 import keras_tuner as kt
+from pathlib import Path
+from time import strftime
 
 tf.keras.utils.set_random_seed(2024) # set random seed for tf, np and python
 
@@ -62,7 +64,7 @@ class Annotation:
     
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_hits pipeline
+        Extract 2 PCA from preprocessing_qtl pipeline
         """
         preprocessed_training=preprocessing_qtl.fit_transform(self.training)
         preprocessed_validation=preprocessing_qtl.transform(self.validation)
@@ -124,7 +126,7 @@ def main():
         
     else:
 
-        hyperband_tuner=kt.Hyperband(MyAnnotationTaskTuning(), objective='val_rmse', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_annotation_qtl', project_name='hyperband')
+        hyperband_tuner=kt.Hyperband(MyAnnotationTaskTuning(), objective='val_RootMeanSquaredError', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_annotation_qtl', project_name='hyperband')
     
         early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=5)
     
