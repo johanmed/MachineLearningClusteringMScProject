@@ -14,6 +14,7 @@ Modelling by hits (chromosome number + marker position)
 from vector_data import X_train, X_valid, X_test, preprocessing_hits
 
 import numpy as np
+import pandas as pd
 
 y_train=X_train['desc']
 
@@ -28,17 +29,20 @@ y_test=X_test['desc']
 X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
 
 
+X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
+
 
 # 2. Select the 2 columns, do clustering and plot
 
 import tensorflow as tf # import DBSCAN class for clustering
 import matplotlib.pyplot as plt # import plot manager
 import os
-import numpy as np
-import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import silhouette_score
 from random import choice
+from pathlib import Path
+from time import strftime
+import keras_tuner as kt
 
 from tensorflow.keras.utils import to_categorical
 
@@ -47,6 +51,8 @@ tf.keras.utils.set_random_seed(2024) # set random seed for tf, np and python
 
 out_dir=os.path.abspath('../output/') # define directory to save plots to
 
+
+from general_deep_learning import MyClusteringTaskTuning # import MyClusteringTaskTuning
 
 
 class Columns2Clustering:
@@ -72,25 +78,12 @@ class Columns2Clustering:
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
 
-    def perform_neural_clustering(self, reduced_features_train):
+    def perform_neural_clustering(self, best_clustering_model):
         """
-        Perform neural clustering on 2 features columns
+        Perform neural clustering on 2 features columns using best model extracted from tuning
         """
-        normalization_layer_unsup=tf.keras.layers.Normalization(input_shape=(2,))
-        neural_model_unsup=tf.keras.models.Sequential([
-        normalization_layer_unsup,
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=10, activation='relu'),
-        tf.keras.layers.Dense(units=5, activation='softmax'), # number of clusters set to 5 here
-        ])
-        neural_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('neural_unsupervised', neural_model_unsup)])
-        neural_clustering[1].compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-        normalization_layer_unsup.adapt(np.array(reduced_features_train))
-        neural_clustering.fit(self.training, y_train, neural_unsupervised__epochs=10, neural_unsupervised__batch_size=1000)
-        #print('The labels for the first 5 training data are: ', dbscan_clustering.labels_[:5]) # check labels of first 5 training data
+        neural_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('best_clustering_model', best_clustering_model)])
+        neural_clustering.fit(self.training, y_train, best_clustering_model__epochs=10)
         
         return neural_clustering
     
@@ -119,11 +112,10 @@ class Columns2Clustering:
         Save figure
         """
         y_pred_unsup_train=neural_clustering.predict(X_train)
-        #print('The probabilities of clusters assignment are: ', y_pred_unsup_train[:10])
-        
+                
         clusters_unsup_train=get_clusters_labels(y_pred_unsup_train)
         
-        #print('The silhouette score obtained as clustering performance measure on training set is:', silhouette_score(X_train, clusters_unsup_train))
+        print('The silhouette score obtained as clustering performance measure on training set is:', silhouette_score(X_train, clusters_unsup_train))
         
         plt.figure(figsize=(10, 10))
         plt.scatter(X_train[:, 0], X_train[:, 1], c=clusters_unsup_train)
@@ -154,8 +146,28 @@ def main():
     clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    
+    if os.path.exists('deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
+        
+        best_model=tf.keras.models.load_model('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
+        
+    else:
+    
+        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_clustering_hits', project_name='hyperband')
+    
+        early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=5)
+    
+        tensorboard_cb=tf.keras.callbacks.TensorBoard(Path(hyperband_tuner.project_dir)/'tensorflow'/strftime("run_%Y_%m_%d_%H_%M_%S"))
+    
+        hyperband_tuner.search(X_train_features, y_train, epochs=10, validation_data=(X_valid_features, y_valid), callbacks=[early_stopping_cb, tensorboard_cb])
+    
+        top3_models=hyperband_tuner.get_best_models(num_models=3)
+    
+        best_model=top3_models[0]
+        
+        best_model.save('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
 
-    actual_clustering=clustering_task.perform_neural_clustering(X_train_features)
+    actual_clustering=clustering_task.perform_neural_clustering(best_model)
 
     Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 
@@ -167,5 +179,5 @@ def main():
 
 import timeit
 
-time_taken = timeit.timeit(lambda: main(), number=5)
+time_taken = timeit.timeit(lambda: main(), number=2)
 print(f"Execution time for deep_learning_clustering_hits.py is : {time_taken} seconds")

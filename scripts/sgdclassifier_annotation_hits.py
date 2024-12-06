@@ -27,6 +27,8 @@ y_test=X_test['desc']
 X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
 
 
+X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
+
 
 
 # 2. Conduct supervised learning to learn how to annotate
@@ -107,5 +109,5 @@ def main():
 
 import timeit
 
-time_taken = timeit.timeit(lambda: main(), number=5)
+time_taken = timeit.timeit(lambda: main(), number=2)
 print(f"Execution time for sgd_annotation_hits.py is : {time_taken} seconds")
