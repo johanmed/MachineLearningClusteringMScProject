@@ -72,8 +72,8 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         """
         Finetuning at the model level
         """
-        n_hidden=hp.Int('n_hidden', min_value=1, max_value=5)
-        n_neurons=hp.Int('n_neurons', min_value=5, max_value=20)
+        n_hidden=hp.Int('n_hidden', min_value=1, max_value=10)
+        n_neurons=hp.Int('n_neurons', min_value=5, max_value=50)
         learning_rate=hp.Float('learning_rate', min_value=1e-4, max_value=1e-1, sampling='log')
         optimizer=hp.Choice('optimizer', values=['sgd', 'adam'])
         
@@ -87,7 +87,7 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         for h in range(1, n_hidden+1):
             hidden_layers_dict[h]=tf.keras.layers.Dense(n_neurons, activation='relu')
         concat_layer=tf.keras.layers.Concatenate()
-        output_layer=tf.keras.layers.Dense(1)
+        output_layer=tf.keras.layers.Dense(units=3, activation='softmax')
         
         layers={}
         layers['input_sup']=tf.keras.layers.Input(shape=(2,))
@@ -99,7 +99,7 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         
         neural_model_sup=tf.keras.Model(inputs=[layers['input_sup']], outputs=[layers['output_sup']])
         
-        neural_model_sup.compile(optimizer=optimizer, loss='mse', metrics=['RootMeanSquaredError'])
+        neural_model_sup.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
         
         return neural_model_sup
 
@@ -113,8 +113,6 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         if hp.Boolean('normalize'):
             normalization_layer=tf.keras.layers.Normalization()
             X=normalization_layer(X)
-        
-        y = to_categorical(y, num_classes=3)
         
         return neural_model_sup.fit(X, y, batch_size=batch_size, **kwargs)
 

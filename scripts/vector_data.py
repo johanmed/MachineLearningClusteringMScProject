@@ -40,6 +40,7 @@ print('The size of the collection is: ', len(X)) # check the size of X
 import pandas as pd
 import numpy as np
 new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc'])
+#new_X.to_csv('../data/whole_dataset_desc_full_desc.csv', index=False)
 
 
 # 3. Define training, validation and test sets

@@ -106,9 +106,9 @@ def main():
 
     extracted_annotation=Annotation.extract_features_target_relationship(X_train_features, y_train, X_valid_features, y_valid)
 
-    Columns2Clustering.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
+    Annotation.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
 
-    Columns2Clustering.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
+    Annotation.visualize_plot_annotation(X_valid_features, y_valid, 'actual')
 
 
 

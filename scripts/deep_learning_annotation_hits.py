@@ -40,6 +40,7 @@ from tensorflow.keras.utils import to_categorical
 import keras_tuner as kt
 from pathlib import Path
 from time import strftime
+from random import choice
 
 tf.keras.utils.set_random_seed(2024) # set random seed for tf, np and python
 
@@ -73,38 +74,47 @@ class Annotation:
         
         return preprocessed_training, preprocessed_validation, preprocessed_test
 
-     
-    def extract_features_target_relationship(self, neural_model_sup, y_train, y_valid):
+    def get_clusters_labels(raw_predictions_proba):
+    
+        """
+        Loop through output dimensions and select the cluster with the highest probability
+        """
+        clusters_unsup=[]
+        for i in raw_predictions_proba:
+            temp=[]
+            for (x,y) in enumerate(i):
+                if y==max(i):
+                    temp.append(x)
+            clusters_unsup.append(choice(temp))
+        
+        return clusters_unsup
+        
+        
+    def extract_features_target_relationship(self, neural_model_sup, y_train, y_valid, get_clusters_labels):
         """
         Find relationships between 2 columns selected (features) and description (target) using neural networks
         Assign to each observation a description to know the type of trait -> supervised learning
         Best model from finetuning used for the purpose
         """
         
-        # Convert target variables to one-hot encoded format
-
-        y_train = to_categorical(y_train, num_classes=3)
-
-        y_valid = to_categorical(y_valid, num_classes=3)
-
-
         neural_assign=Pipeline([('preprocessing_hits', preprocessing_hits), ('neural_supervised', neural_model_sup)])
         neural_assign.fit(self.training, y_train, neural_supervised__epochs=10)
         
         y_supervised_pred=neural_assign.predict(self.validation)
-        
-        print('The classification report is as follows: ', classification_report(y_valid, y_pred_supervised))
-        
-        return y_supervised_pred
+        labels_supervised=get_clusters_labels(y_supervised_pred)
 
+        print('The classification report is as follows: \n', classification_report(np.array(y_valid), np.array(labels_supervised)))
+        
+        return labels_supervised
+        
 
-    def visualize_plot_annotation(X_valid, y_supervised_pred, type_anno):
+    def visualize_plot_annotation(X_valid, labels_supervised, type_anno):
         """
         Regenerate visualization for clustering adding annotation of description or original trait category to each observation
         Save figure
         """
         plt.figure(figsize=(10, 10))
-        plt.scatter(X_valid[:, 0], X_valid[:, 1], c=y_supervised_pred)
+        plt.scatter(X_valid[:, 0], X_valid[:, 1], c=labels_supervised)
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
@@ -127,7 +137,7 @@ def main():
         
     else:
 
-        hyperband_tuner=kt.Hyperband(MyAnnotationTaskTuning(), objective='val_RootMeanSquaredError', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_annotation_hits', project_name='hyperband')
+        hyperband_tuner=kt.Hyperband(MyAnnotationTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_annotation_hits', project_name='hyperband')
     
         early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=5)
     
@@ -141,7 +151,7 @@ def main():
         
         best_model.save('deep_learning_annotation_hits/best_annotation_model_by_hits.keras')
 
-    extracted_annotation=annotation_task.extract_features_target_relationship(best_model, y_train, y_valid)
+    extracted_annotation=annotation_task.extract_features_target_relationship(best_model, y_train, y_valid, Annotation.get_clusters_labels)
 
     Annotation.visualize_plot_annotation(X_valid_features, extracted_annotation, 'predicted')
 
