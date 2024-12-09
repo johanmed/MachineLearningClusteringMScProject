@@ -33,7 +33,7 @@ class MyClusteringTaskTuning(kt.HyperModel):
         for h in range(1, n_hidden+1):
             hidden_layers_dict[h]=tf.keras.layers.Dense(n_neurons, activation='relu')
         concat_layer=tf.keras.layers.Concatenate()
-        output_layer=tf.keras.layers.Dense(units=n_clusters, activation='softmax') # number of clusters set to 5 here
+        output_layer=tf.keras.layers.Dense(units=n_clusters+1, activation='softmax') # number of clusters set to 5 here
         
         layers={}
         layers['input_unsup']=tf.keras.layers.Input(shape=(2,))

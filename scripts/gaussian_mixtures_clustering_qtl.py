@@ -13,7 +13,7 @@ Modelling by QTL peaks (chromosome number)
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
 from vector_data import X_train, X_valid, X_test, preprocessing_qtl
-
+import pandas as pd
 import numpy as np
 
 y_train=X_train['desc']
@@ -103,9 +103,9 @@ def main():
 
     actual_clustering, prediction_clusters_valid=clustering_task.perform_bgm(X_valid_features)
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering[1], X_train_features)
+    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering[1], X_train_features)
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering[1], X_valid_features)
+    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering[1], X_valid_features)
 
 
 
