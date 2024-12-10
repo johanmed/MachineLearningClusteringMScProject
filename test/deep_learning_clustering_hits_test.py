@@ -16,17 +16,17 @@ from vector_data import X_train, X_valid, X_test, preprocessing_hits
 import numpy as np
 import pandas as pd
 
-y_train=X_train['desc'][:(y_train.shape//2)]
+y_train=X_train['desc'][:(X_train.shape[0]//4)]
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(y_train.shape//2)]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(X_train.shape[0]//4)]
 
-y_valid=X_valid['desc'][:(y_valid.shape//2)]
+y_valid=X_valid['desc'][:(X_valid.shape[0]//4)]
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(y_valid.shape//2)]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(X_valid.shape[0]//4)]
 
-y_test=X_test['desc'][:(y_test.shape//2)]
+y_test=X_test['desc'][:(X_test.shape[0]//4)]
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(y_test.shape//2)]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']][:(X_test.shape[0]//4)]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
@@ -147,25 +147,10 @@ def main():
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
     
-    if os.path.exists('../deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
+    if os.path.exists('../scripts/deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
         
-        best_model=tf.keras.models.load_model('../deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
+        best_model=tf.keras.models.load_model('../scripts/deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
         
-    else:
-    
-        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='../deep_learning_clustering_hits', project_name='hyperband')
-    
-        early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=5)
-    
-        tensorboard_cb=tf.keras.callbacks.TensorBoard(Path(hyperband_tuner.project_dir)/'tensorflow'/strftime("run_%Y_%m_%d_%H_%M_%S"))
-    
-        hyperband_tuner.search(X_train_features, y_train, epochs=10, validation_data=(X_valid_features, y_valid), callbacks=[early_stopping_cb, tensorboard_cb])
-    
-        top3_models=hyperband_tuner.get_best_models(num_models=3)
-    
-        best_model=top3_models[0]
-        
-        best_model.save('../deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
 
     actual_clustering=clustering_task.perform_neural_clustering(best_model)
 

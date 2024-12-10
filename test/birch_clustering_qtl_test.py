@@ -17,17 +17,17 @@ import pandas as pd
 import numpy as np
 
 
-y_train=X_train['desc'][:(y_train.shape//2)]
+y_train=X_train['desc'][:(X_train.shape[0]//4)]
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(y_train.shape//2)]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(X_train.shape[0]//4)]
 
-y_valid=X_valid['desc'][:(y_valid.shape//2)]
+y_valid=X_valid['desc'][:(X_valid.shape[0]//4)]
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(y_valid.shape//2)]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(X_valid.shape[0]//4)]
 
-y_test=X_test['desc'][:(y_test.shape//2)]
+y_test=X_test['desc'][:(X_test.shape[0]//4)]
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(y_test.shape//2)]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']][:(X_test.shape[0]//4)]
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
 
@@ -97,6 +97,8 @@ class Columns2Clustering(ModellingBirch):
 def main():
 
     clustering_task=Columns2Clustering(X_train, X_valid, X_test)
+    
+    X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
     actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
 
