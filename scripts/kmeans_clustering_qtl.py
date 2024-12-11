@@ -38,7 +38,7 @@ X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to trai
 
 # 2. Select the 2 columns, do clustering and plot
 
-from sklearn.cluster import KMeans # import KMeans class
+from sklearn.cluster import MiniBatchKMeans # import MiniBatchKMeans class
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt # import plot manager
 import os
@@ -74,7 +74,7 @@ class Columns2Clustering(ModellingKMeans):
         """
         Run KMeans for number of clusters on training and save predictions and distances to centroids
         """
-        kmeans_clustering=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('kmeans', KMeans(algorithm='elkan', random_state=2024))])
+        kmeans_clustering=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('kmeans', MiniBatchKMeans(random_state=2024))])
         kmeans_clustering.fit(self.training)
         #print('The labels assigned to the following training data \n', X_train[:5], ' are respectively: \n', kmeans.labels_[:5]) # check labels of first 5 training data
         y_pred=kmeans_clustering.predict(self.validation)
@@ -120,9 +120,9 @@ def main():
 
     actual_clustering=clustering_task.perform_kmeans_clustering(X_valid_features)
 
-    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
 
-    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
+    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
 
     prediction_clusters=actual_clustering[1]
 
