@@ -118,7 +118,7 @@ class Annotation:
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_neural_clustering_{type_anno}_annotation_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"Project_PCA_neural_{type_anno}_annotation_result_by_hits"))
 
      
 

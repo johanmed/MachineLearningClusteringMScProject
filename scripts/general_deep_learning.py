@@ -17,12 +17,12 @@ class MyClusteringTaskTuning(kt.HyperModel):
         """
         Finetuning at the model level
         """
-        n_hidden=hp.Int('n_hidden', min_value=1, max_value=20, default=10)
+        n_hidden=hp.Int('n_hidden', min_value=1, max_value=50, default=10)
         n_neurons=hp.Int('n_neurons', min_value=10, max_value=100)
         learning_rate=hp.Float('learning_rate', min_value=1e-4, max_value=1e-1, sampling='log')
         optimizer=hp.Choice('optimizer', values=['sgd', 'adam'])
-        hidden_activation_func=hp.Choice('activation_func', values=['relu', 'leaky_relu', 'elu', 'gelu', 'swish', 'mish'])
-        n_clusters=hp.Int('n_clusters', min_value=2, max_value=5)
+        hidden_activation_func=hp.Choice('hidden_activation_func', values=['relu', 'leaky_relu', 'elu', 'gelu', 'swish', 'mish'])
+        n_clusters=hp.Int('n_clusters', min_value=2, max_value=10)
         
         if optimizer=='sgd':
             optimizer=tf.keras.optimizers.SGD(learning_rate=learning_rate)
@@ -32,7 +32,7 @@ class MyClusteringTaskTuning(kt.HyperModel):
         
         hidden_layers_dict={}
         for h in range(1, n_hidden+1):
-            hidden_layers_dict[h]=tf.keras.layers.Dense(n_neurons, kernel_initializer='he_normal', use_bias=False)
+            hidden_layers_dict[h]=tf.keras.layers.Dense(units=n_neurons, kernel_initializer='he_normal', activation=hidden_activation_func)
             
         concat_layer=tf.keras.layers.Concatenate()
         output_layer=tf.keras.layers.Dense(units=n_clusters+1, activation='softmax') # number of clusters set to 5 here
@@ -41,12 +41,9 @@ class MyClusteringTaskTuning(kt.HyperModel):
         layers['input_unsup']=tf.keras.layers.Input(shape=(2,))
         
         for k in hidden_layers_dict:
-            layers[f'batch{k}']=tf.keras.layers.BatchNormalization()
-            layers[f'activation{k}']=tf.keras.layers.Activation(hidden_activation_func)
-            layers[f'hidden{k}']=hidden_layers_dict[k](layers[list(layers.keys())[-1]])
+            layers[f'hidden{k}']=hidden_layers_dict[k](layers[list(layers.keys())[-1]]) # layer output passed to hidden is the previous one before the 2 above just added
             
-            
-        layers['concatenated']=concat_layer([layers['input_unsup'], layers[list(layers.keys())[-1]]])
+        layers['concatenated']=concat_layer([layers['input_unsup'], layers[list(layers.keys())[-1]]]) # last layer of the dictionary passed with the input layer for concatenation
         layers['output_unsup']=output_layer(layers['concatenated'])
         
         neural_model_unsup=tf.keras.Model(inputs=[layers['input_unsup']], outputs=[layers['output_unsup']])
@@ -78,8 +75,8 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         """
         Finetuning at the model level
         """
-        n_hidden=hp.Int('n_hidden', min_value=1, max_value=10)
-        n_neurons=hp.Int('n_neurons', min_value=5, max_value=50)
+        n_hidden=hp.Int('n_hidden', min_value=5, max_value=50)
+        n_neurons=hp.Int('n_neurons', min_value=10, max_value=100)
         learning_rate=hp.Float('learning_rate', min_value=1e-4, max_value=1e-1, sampling='log')
         optimizer=hp.Choice('optimizer', values=['sgd', 'adam'])
         hidden_activation_func=hp.Choice('activation_func', values=['relu', 'leaky_relu', 'elu', 'gelu', 'swish', 'mish'])
@@ -92,7 +89,7 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         
         hidden_layers_dict={}
         for h in range(1, n_hidden+1):
-            hidden_layers_dict[h]=tf.keras.layers.Dense(n_neurons, kernel_initializer='he_normal', use_bias=False)
+            hidden_layers_dict[h]=tf.keras.layers.Dense(n_neurons, kernel_initializer='he_normal', activation=hidden_activation_func)
             
         concat_layer=tf.keras.layers.Concatenate()
         output_layer=tf.keras.layers.Dense(units=3, activation='softmax')
@@ -101,12 +98,10 @@ class MyAnnotationTaskTuning(kt.HyperModel):
         layers['input_sup']=tf.keras.layers.Input(shape=(2,))
         
         for k in hidden_layers_dict:
-            layers[f'batch{k}']=tf.keras.layers.BatchNormalization()
-            layers[f'activation{k}']=tf.keras.layers.Activation(hidden_activation_func)
-            layers[f'hidden{k}']=hidden_layers_dict[k](layers[list(layers.keys())[-1]])
+            layers[f'hidden{k}']=hidden_layers_dict[k](layers[list(layers.keys())[-1]]) # layer output passed to hidden is the previous one before the 2 above just added
             
             
-        layers['concatenated']=concat_layer([layers['input_sup'], layers[list(layers.keys())[-1]]])
+        layers['concatenated']=concat_layer([layers['input_sup'], layers[list(layers.keys())[-1]]]) # last layer of the dictionary passed with the input layer for concatenation
         layers['output_sup']=output_layer(layers['concatenated'])
         
         neural_model_sup=tf.keras.Model(inputs=[layers['input_sup']], outputs=[layers['output_sup']])
