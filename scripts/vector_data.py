@@ -19,7 +19,7 @@ X=[] # empty array to keep data
 
 import os
 
-database=os.path.abspath('/home/johannes/Downloads/real_project.mdb')
+database=os.path.abspath('../../../project_02_01_24.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -28,10 +28,12 @@ with lmdb.open(database, subdir=False) as env:
                 if key==b'meta':
                     continue
                 else:
-                    chr, pos, se, l_mle, p_lrt= unpack('>cLfff', key)
-                    chr_num=int.from_bytes(chr)
-                    af, beta, se, l_mle, p_lrt, desc= unpack('=ffffff', value)
-                    X.append([chr_num, pos, af, beta, se, l_mle, p_lrt, desc])
+                    chr_c, pos, se, l_mle, p_lrt = unpack('>cLfff', key)
+                    b_chr=unpack('c', chr_c)
+                    chr_num=ord(b_chr[0])
+                    af, beta, se, l_mle, p_lrt, desc, b_full_desc= unpack('=fffffB100s', value)
+                    full_desc=b_full_desc.decode('utf-8').strip('\x00')
+                    X.append([chr_num, pos, af, beta, se, l_mle, p_lrt, desc, full_desc])
 
 print('The size of the collection is: ', len(X)) # check the size of X
 
@@ -39,25 +41,31 @@ print('The size of the collection is: ', len(X)) # check the size of X
 
 import pandas as pd
 import numpy as np
-new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc'])
-#new_X.to_csv('../data/whole_dataset_desc_full_desc.csv', index=False)
+new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc', 'full_desc'])
+#new_X.to_csv('../data/project_dataset_with_desc_full_desc.csv', index=False)
 
 
 # 3. Define training, validation and test sets
 
 from sklearn.model_selection import train_test_split # import utility for splitting
 
-X_train_valid, X_test= train_test_split(new_X, test_size=0.1, random_state=2024)
+processed_X=pd.DataFrame(new_X[['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc']], dtype=float)
+
+#print('processed_X is : \n', processed_X.head())
+
+X_train_valid, X_test= train_test_split(processed_X, test_size=0.1, random_state=2024)
+
 X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=2024)
 
+#print('X_train is: \n', X_train.head())
 
 # 4. Plot histogram of training features and assess quality
 
 import matplotlib.pyplot as plt # import plot manager
 
-X_train.hist(bins=50, figsize=(10, 10))
+#X_train.hist(bins=50, figsize=(10, 10))
 out_dir=os.path.abspath('../output/')
-plt.savefig(os.path.join(out_dir, "Project Quality check before transformation"))
+#plt.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"))
 
 
 
@@ -118,7 +126,7 @@ from sklearn.preprocessing import StandardScaler # import transformer
 
 std_scaler=StandardScaler()
 for i in X_train.columns:
-    if i=='desc':
+    if i=='desc' or i=='full_desc':
         continue
     else:
         std_scaler1=std_scaler.fit_transform((np.array(X_train[i])).reshape(-1, 1)) # fit transformer on training set
@@ -134,8 +142,8 @@ for i in X_train.columns:
 
 # 9. Plot histogram of transformed training features and confirm quality
 
-X_train.hist(bins=50, figsize=(25, 25))
-plt.savefig(os.path.join(out_dir, "Project Quality check after transformation"))
+#X_train.hist(bins=50, figsize=(25, 25))
+#plt.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"))
 
 
 # 10. Wrap up all transformations in a Transformer and add PCA to 2d for one_hot_desc, p_lrt, chr_num and pos
