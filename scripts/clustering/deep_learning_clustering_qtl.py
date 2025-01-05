@@ -73,7 +73,7 @@ class Columns2Clustering:
     
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_hits pipeline
+        Extract 2 PCA from preprocessing_qtl pipeline
         """
         preprocessed_training=preprocessing_qtl.fit_transform(self.training)
         preprocessed_validation=preprocessing_qtl.transform(self.validation)
