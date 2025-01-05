@@ -12,7 +12,13 @@ Modelling by QTL peaks (chromosome number)
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+
 from vector_data import X_train, X_valid, X_test, preprocessing_qtl
+
 import pandas as pd
 import numpy as np
 
@@ -45,7 +51,7 @@ from sklearn.metrics import silhouette_score
 from general_clustering import ModellingGaussian
 
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 class Columns2Clustering(ModellingGaussian):
@@ -88,7 +94,7 @@ class Columns2Clustering(ModellingGaussian):
         """
         plt.figure(figsize=(10, 10))
         plot_bgm(bgm_clustering, X_train, size)
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_Gaussian_clustering_result_by_qtl"))
+        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_qtl"))
 
 
 
@@ -109,9 +115,5 @@ def main():
 
 
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for gaussian_mixtures_clustering_qtl.py is : {time_taken} seconds")
-
+main()
 

@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 
 """
-Dependencies: vector_data.py -> data, preprocessing_hits
-SGDClassifier is used
-Modelling by hits (chromosome number + marker position)
+Dependencies: vector_data.py -> data, preprocessing_qtl
+KNeighborsClassifier is used
+Modelling by qtl (chromosome number)
 """
 
 
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
-from vector_data import X_train, X_valid, X_test, preprocessing_hits
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+
+from vector_data import X_train, X_valid, X_test, preprocessing_qtl
 
 import numpy as np
 import pandas as pd
@@ -31,18 +36,15 @@ X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
 
 
-
 # 2. Conduct supervised learning to learn how to annotate
 
 import matplotlib.pyplot as plt # import plot manager
-import os
-import pandas as pd
-from sklearn.linear_model import SGDClassifier # import SGDClassifer for prediction based on DBSCAN clustering
+from sklearn.ensemble import RandomForestClassifier # import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 class Annotation:
@@ -56,14 +58,13 @@ class Annotation:
         self.validation=validation
         self.test=test
     
-    
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_hits pipeline
+        Extract 2 PCA from preprocessing_qtl pipeline
         """
-        preprocessed_training=preprocessing_hits.fit_transform(self.training)
-        preprocessed_validation=preprocessing_hits.transform(self.validation)
-        preprocessed_test=preprocessing_hits.transform(self.test)
+        preprocessed_training=preprocessing_qtl.fit_transform(self.training)
+        preprocessed_validation=preprocessing_qtl.transform(self.validation)
+        preprocessed_test=preprocessing_qtl.transform(self.test)
         
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
@@ -75,10 +76,11 @@ class Annotation:
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
         """
-        assign_vec=SGDClassifier(random_state=2024)
-        assign_vec.fit(X_train, y_train)
-        y_supervised_pred=assign_vec.predict(X_valid)
+        assign_rand_for=RandomForestClassifier(random_state=2024)
+        assign_rand_for.fit(X_train, y_train)
+        y_supervised_pred=assign_rand_for.predict(X_valid)
         print(classification_report(y_valid, y_supervised_pred))
+        
         return y_supervised_pred
 
 
@@ -92,7 +94,7 @@ class Annotation:
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_SGD_{type_anno}_annotation_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"RandomForest_{type_anno}_annotation_result_by_qtl"))
 
      
 
@@ -114,7 +116,4 @@ def main():
 
 
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for sgd_annotation_hits.py is : {time_taken} seconds")
+main()

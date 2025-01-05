@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 
 """
-Dependencies: vector_data.py -> data, preprocessing_qtl
+Dependencies: vector_data.py -> data, preprocessing_hits
 KNeighborsClassifier is used
-Modelling by qtl (chromosome number)
+Modelling by hits (chromosome number + marker position)
 """
 
 
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
-from vector_data import X_train, X_valid, X_test, preprocessing_qtl
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+from vector_data import X_train, X_valid, X_test, preprocessing_hits
 
 import numpy as np
 import pandas as pd
@@ -34,14 +38,12 @@ X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to trai
 # 2. Conduct supervised learning to learn how to annotate
 
 import matplotlib.pyplot as plt # import plot manager
-import os
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier # import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier # import KNeighborsClassifier for prediction based on DBSCAN clustering
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 class Annotation:
@@ -55,13 +57,14 @@ class Annotation:
         self.validation=validation
         self.test=test
     
+    
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_qtl pipeline
+        Extract 2 PCA from preprocessing_hits pipeline
         """
-        preprocessed_training=preprocessing_qtl.fit_transform(self.training)
-        preprocessed_validation=preprocessing_qtl.transform(self.validation)
-        preprocessed_test=preprocessing_qtl.transform(self.test)
+        preprocessed_training=preprocessing_hits.fit_transform(self.training)
+        preprocessed_validation=preprocessing_hits.transform(self.validation)
+        preprocessed_test=preprocessing_hits.transform(self.test)
         
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
@@ -73,11 +76,11 @@ class Annotation:
         Find relationships between 2 columns selected (features) and description (target)
         Assign to each observation a description to know the type of trait -> supervised learning
         """
-        assign_rand_for=RandomForestClassifier(random_state=2024)
-        assign_rand_for.fit(X_train, y_train)
-        y_supervised_pred=assign_rand_for.predict(X_valid)
+        assign_knn=KNeighborsClassifier()
+        assign_knn.fit(X_train, y_train)
+        y_supervised_pred=assign_knn.predict(X_valid)
+        #print('The prediction for the first 5 validation data is :', y_pred[:5])
         print(classification_report(y_valid, y_supervised_pred))
-        
         return y_supervised_pred
 
 
@@ -91,7 +94,7 @@ class Annotation:
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_RandomForest_{type_anno}_annotation_result_by_qtl"))
+        plt.savefig(os.path.join(out_dir, f"KNN_{type_anno}_annotation_result_by_hits"))
 
      
 
@@ -113,7 +116,4 @@ def main():
 
 
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for randomforest_annotation_qtl.py is : {time_taken} seconds")
+main()

@@ -7,7 +7,7 @@ from matplotlib.colors import LogNorm
 class ModellingBirch:
 
     """
-    Represent ML operations using DBSCAN
+    Represent ML operations using Birch
     """
     
     def __init__(self, training, validation, test):
@@ -114,7 +114,7 @@ class ModellingKMeans:
 class ModellingGaussian:
 
     """
-    Represent ML operations using Gaussian Mixture Models
+    Represent ML operations using Gaussian Mixture
     """
     
     def __init__(self, training, validation, test):

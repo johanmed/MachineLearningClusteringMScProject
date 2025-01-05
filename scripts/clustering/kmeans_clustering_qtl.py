@@ -4,33 +4,39 @@
 Summary:
 This script contains code to run KMeans clustering algorithm on data
 Dependencies:
-- vector_data.py -> data, preprocessing_hits
+- vector_data.py -> data, preprocessing_qtl
 - general_clustering -> ModellingKMeans
 KMeans is run twice:
 1. Identify the best number of clusters for the data using the training data
 2. Proceed to actual training and validation on respective data
-Modelling by hits (chromosome number + chromosomal position)
+Modelling by QTL (chromosome number)
 """
 
 
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
-from vector_data import X_train, X_valid, X_test, preprocessing_hits
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+
+from vector_data import X_train, X_valid, X_test, preprocessing_qtl
+
 import pandas as pd
 import numpy as np
 
 y_train=X_train['desc']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 y_valid=X_valid['desc']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 y_test=X_test['desc']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
@@ -39,15 +45,15 @@ X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to trai
 # 2. Select the 2 columns, do clustering and plot
 
 from sklearn.cluster import MiniBatchKMeans # import MiniBatchKMeans class
-import matplotlib.pyplot as plt # import plot manager
-import os
 from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt # import plot manager
+from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
 from general_clustering import ModellingKMeans
 
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 
@@ -60,11 +66,11 @@ class Columns2Clustering(ModellingKMeans):
     
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_hits pipeline
+        Extract 2 PCA from preprocessing_qtl pipeline
         """
-        preprocessed_training=preprocessing_hits.fit_transform(self.training)
-        preprocessed_validation=preprocessing_hits.transform(self.validation)
-        preprocessed_test=preprocessing_hits.transform(self.test)
+        preprocessed_training=preprocessing_qtl.fit_transform(self.training)
+        preprocessed_validation=preprocessing_qtl.transform(self.validation)
+        preprocessed_test=preprocessing_qtl.transform(self.test)
         
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
@@ -73,7 +79,7 @@ class Columns2Clustering(ModellingKMeans):
         """
         Run KMeans for number of clusters on training and save predictions and distances to centroids
         """
-        kmeans_clustering=Pipeline([('preprocessing_hits', preprocessing_hits), ('kmeans', MiniBatchKMeans(random_state=2024))])
+        kmeans_clustering=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('kmeans', MiniBatchKMeans(random_state=2024))])
         kmeans_clustering.fit(self.training)
         #print('The labels assigned to the following training data \n', X_train[:5], ' are respectively: \n', kmeans.labels_[:5]) # check labels of first 5 training data
         y_pred=kmeans_clustering.predict(self.validation)
@@ -104,10 +110,10 @@ class Columns2Clustering(ModellingKMeans):
         
         plt.figure(figsize=(10, 10))
         plot_kmeans(clusterer, X_train, Columns2Clustering.plot_decision_boundaries)
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_KMeans_clustering_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"MiniBatchKMeans_clustering_result_by_qtl"))
         
-        
-  
+
+
 
 # Main
 
@@ -127,9 +133,7 @@ def main():
 
     distances_centroids_validation=actual_clustering[2]
 
+    
 
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for kmeans_clustering_hits.py is : {time_taken} seconds")
+main()

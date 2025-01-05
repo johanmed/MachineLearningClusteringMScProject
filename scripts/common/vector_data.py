@@ -19,7 +19,7 @@ X=[] # empty array to keep data
 
 import os
 
-database=os.path.abspath('../../../project_02_01_24.mdb')
+database=os.path.abspath('../../../../project_02_01_24.mdb')
 
 with lmdb.open(database, subdir=False) as env:
     with env.begin() as txn:
@@ -41,8 +41,9 @@ print('The size of the collection is: ', len(X)) # check the size of X
 
 import pandas as pd
 import numpy as np
+
 new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc', 'full_desc'])
-new_X.to_csv('../../../project_dataset_with_desc_full_desc.csv', index=False)
+new_X.to_csv('../../../../project_dataset_with_desc_full_desc.csv', index=False)
 
 
 # 3. Define training, validation and test sets
@@ -63,9 +64,9 @@ X_train, X_valid=train_test_split(X_train_valid, test_size=0.1, random_state=202
 
 import matplotlib.pyplot as plt # import plot manager
 
-X_train.hist(bins=50, figsize=(10, 10))
-out_dir=os.path.abspath('../output/')
-plt.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"))
+#X_train.hist(bins=50, figsize=(10, 10))
+out_dir=os.path.abspath('../../output/')
+#plt.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"))
 
 
 
@@ -104,7 +105,6 @@ X_test[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 
 
 # 7. Extract clusters using chr_num and chr_pos
 
-from sklearn.cluster import KMeans
 
 prelim2_clustering=KMeans(n_clusters=5, algorithm='elkan', random_state=2024)
 
@@ -142,8 +142,8 @@ for i in X_train.columns:
 
 # 9. Plot histogram of transformed training features and confirm quality
 
-X_train.hist(bins=50, figsize=(25, 25))
-plt.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"))
+#X_train.hist(bins=50, figsize=(25, 25))
+#plt.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"))
 
 
 # 10. Wrap up all transformations in a Transformer and add PCA to 2d for one_hot_desc, p_lrt, chr_num and pos

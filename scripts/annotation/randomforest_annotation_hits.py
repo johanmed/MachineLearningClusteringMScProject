@@ -10,6 +10,11 @@ Modelling by hits (chromosome number + marker position)
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+
 from vector_data import X_train, X_valid, X_test, preprocessing_hits
 
 import numpy as np
@@ -34,14 +39,12 @@ X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to trai
 # 2. Conduct supervised learning to learn how to annotate
 
 import matplotlib.pyplot as plt # import plot manager
-import os
-import pandas as pd
 from sklearn.ensemble import RandomForestClassifier # import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 class Annotation:
@@ -91,7 +94,7 @@ class Annotation:
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.colorbar(label='Original trait category', spacing='uniform', values=[0, 1, 2])
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_RandomForest_{type_anno}_annotation_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"RandomForest_{type_anno}_annotation_result_by_hits"))
 
      
 
@@ -113,7 +116,4 @@ def main():
 
 
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for randomforest_annotation_hits.py is : {time_taken} seconds")
+main()

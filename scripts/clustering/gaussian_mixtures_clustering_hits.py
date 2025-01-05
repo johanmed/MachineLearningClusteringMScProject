@@ -12,7 +12,13 @@ Modelling by hits (chromosome number + marker position)
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
+import os
+
+os.chdir('../common/') # change to directory with vector_data.py
+
+
 from vector_data import X_train, X_valid, X_test, preprocessing_hits
+
 import pandas as pd
 import numpy as np
 
@@ -37,15 +43,13 @@ X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to trai
 from sklearn.mixture import BayesianGaussianMixture # import BayesianGaussianMixture class for clustering
 import matplotlib.pyplot as plt # import plot manager
 from matplotlib.colors import LogNorm
-import os
-import pandas as pd
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import silhouette_score
 
 from general_clustering import ModellingGaussian
 
-out_dir=os.path.abspath('../output/') # define directory to save plots to
+out_dir=os.path.abspath('../../output/') # define directory to save plots to
 
 
 class Columns2Clustering(ModellingGaussian):
@@ -88,7 +92,7 @@ class Columns2Clustering(ModellingGaussian):
         """
         plt.figure(figsize=(10, 10))
         plot_bgm(bgm_clustering, X_train, size)
-        plt.savefig(os.path.join(out_dir, f"Project_PCA_Gaussian_clustering_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_hits"))
         
 
 
@@ -109,7 +113,4 @@ def main():
     
     
 
-import timeit
-
-time_taken = timeit.timeit(lambda: main(), number=2)
-print(f"Execution time for gaussian_mixtures_clustering_hits.py is : {time_taken} seconds")
+main()
