@@ -63,9 +63,9 @@ def main():
 
     X_full_features=clustering_task.get_features() # get preprocessed features for whole dataset
     
-    if os.path.exists('deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
+    if os.path.exists('../clustering/deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras'):
         
-        best_model=tf.keras.models.load_model('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
+        best_model=tf.keras.models.load_model('../clustering/deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
         
         prediction_clusters=NewColumns2Clustering.predict_neural_clustering(best_model, X_full_features, NewColumns2Clustering.get_clusters_labels)
         
