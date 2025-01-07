@@ -28,7 +28,7 @@ for row in assoc_info[1:]: # skip first line that is file header
         container[full_desc]={(chr_num, pos):[float(p_lrt)]}
         
 #print('The container is: \n', container)
-
+print('The length of the container is: ', len(container))
 
 def compare_info_trait(trait_pos):
     """
@@ -47,7 +47,7 @@ def compare_info_trait(trait_pos):
     
     
 
-def analyze_traits(container):
+def analyze_traits(container, compare_info_trait):
     """
     Scrutinize and perform analysis of all the traits in container
     """
@@ -57,8 +57,8 @@ def analyze_traits(container):
         print(f'Analyzing trait {trait}...')
         trait_diff=compare_info_trait(container[trait])
     
-        if len(trait_diff)>=2:
-            print(f'The trait {trait} shows differences in p-lrt in at least 2 genomic positions that could be statistically meaningful')
+        if len(trait_diff)>=1:
+            print(f'The trait {trait} shows differences in p-lrt in at least 1 genomic position that could be statistically meaningful')
     
             assoc_diff[trait]=trait_diff
     
@@ -67,45 +67,34 @@ def analyze_traits(container):
 
 # Analyze each trait and search for differences in p_lrt that might be relevant statistically
     
-results=analyze_traits(container)
+results=analyze_traits(container, compare_info_trait)
 
 #print('The raw results of the analysis are: \n', results)
-
+print('The length of results: ', len(results))
 
 # Plot pie chart of proportion of traits with differences in their association results across datasets
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 fig, ax=plt.subplots()
-ax.pie([len(results), len(container)-len(results)], labels=['Traits with differences', 'Traits with no differences'], rotatelabels=True)
+
+data=pd.DataFrame([len(results), len(container)-len(results)], index=['Traits with differences', 'Traits with no differences'])
+
+data.plot.pie(y=0, color='black')
+
 ax.set_title('Proportion of traits with differences in association results')
-ax.legend()
 
 fig.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
 
 
-# Plot horizontal bar plot of proportion of differences for all traits with differences in association results
-
-import numpy as np
+# Plot vertical bar plot of proportion of differences for all traits with differences in association results
 
 fig, ax=plt.subplots()
 
-ys=[i*10 for i in range(1, len(results)+1)] # place each at location determine by its index*10
+data=pd.DataFrame([len(results[j]) for j in results.keys()], index=[j for j in results.keys()]) # use the number of differences in each trait to determine the width of each bar
 
-
-y_labels=[j for j in results.keys()] # use trait names stored as keys
-
-xs=np.linspace(0, 1, num=10, dtype=float)
-
-widths=[len(results[j])/1 for j in results.keys()] # use the number of differences in each trait to determine the width of each bar
-
-ax.barh(ys, widths, color='black')
-
-ax.set_xticks(xs)
-
-ax.set_yticks(ys)
-
-ax.set_yticklabels(y_labels, rotation=30, fontsize=5)
+data.plot.bar(ax=ax, color='black', alpha=0.7)
 
 ax.set_title('Proportion of differences in association results')
 
