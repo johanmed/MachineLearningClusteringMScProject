@@ -2,51 +2,24 @@
 
 """
 Summary:
-This file contains code to load data from vector database and stores in variable X for unsupervised machine learning
-X is converted to a dataframe
+This file contains code to load data from dataset for unsupervised machine learning
 Data of each column are plotted in histogram to assess quality
 Training, validation and test sets are defined from X data randomly
 Features of the training set are scaled and validation and test set are transformed accordingly
 Data of each column of the training are plotted in histogram to confirm quality
 """
 
-# 1. Load data from vector database
 
-import lmdb # import lmdb module to manage access to the vector database
-from struct import * # manage unpacking operations
-
-X=[] # empty array to keep data
-
-import os
-
-database=os.path.abspath('../../../../project_02_01_24.mdb')
-
-with lmdb.open(database, subdir=False) as env:
-    with env.begin() as txn:
-        with txn.cursor() as curs:
-            for (key, value) in list(txn.cursor().iternext()):
-                if key==b'meta':
-                    continue
-                else:
-                    chr_c, pos, se, l_mle, p_lrt = unpack('>cLfff', key)
-                    b_chr=unpack('c', chr_c)
-                    chr_num=ord(b_chr[0])
-                    af, beta, se, l_mle, p_lrt, desc, b_full_desc= unpack('=fffffB100s', value)
-                    full_desc=b_full_desc.decode('utf-8').strip('\x00')
-                    X.append([chr_num, pos, af, beta, se, l_mle, p_lrt, desc, full_desc])
-
-print('The size of the collection is: ', len(X)) # check the size of X
-
-# 2. Convert data into dataframe
+# 1. Import data as dataframe
 
 import pandas as pd
-import numpy as np
 
-new_X= pd.DataFrame(np.array(X), columns=['chr_num', 'pos', 'af', 'beta', 'se', 'l_mle', 'p_lrt', 'desc', 'full_desc'])
-new_X.to_csv('../../../../project_dataset_with_desc_full_desc.csv', index=False)
+new_X= pd.read_csv('../../../../project_dataset_with_desc_full_desc.csv', index_col=False)
+
+#print('new X looks like: \n', new_X.head())
 
 
-# 3. Define training, validation and test sets
+# 2. Define training, validation and test sets
 
 from sklearn.model_selection import train_test_split # import utility for splitting
 

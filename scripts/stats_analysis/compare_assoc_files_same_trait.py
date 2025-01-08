@@ -77,15 +77,13 @@ print('The length of results: ', len(results))
 import matplotlib.pyplot as plt
 import pandas as pd
 
-fig, ax=plt.subplots()
-
 data=pd.DataFrame([len(results), len(container)-len(results)], index=['Traits with differences', 'Traits with no differences'])
 
-data.plot.pie(y=0, color='black')
+data.plot.pie(y=0)
 
-ax.set_title('Proportion of traits with differences in association results')
+plt.suptitle('Proportion of traits with differences in association results')
 
-fig.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
+plt.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
 
 
 # Plot vertical bar plot of proportion of differences for all traits with differences in association results
