@@ -9,7 +9,7 @@ Assuming they are identical, compare the p-values
 
 # Read association info
 
-f=open('../../../../project_dataset_with_desc_full_desc.csv')
+f=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
 assoc_info=f.readlines()
 f.close()
 

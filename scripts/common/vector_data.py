@@ -14,10 +14,18 @@ Data of each column of the training are plotted in histogram to confirm quality
 
 import pandas as pd
 
-new_X= pd.read_csv('../../../../project_dataset_with_desc_full_desc.csv', index_col=False)
+new_one= pd.read_csv('../../../../project_dataset_expression_traits_with_desc_full_desc.csv', index_col=False)
+#print('size of new one is: ', new_one.shape)
+
+new_two= pd.read_csv('../../../../project_dataset_non_expression_traits_with_desc_full_desc.csv', index_col=False)
+#print('size of new two is: ', new_two.shape)
+
+new_X=pd.concat([new_one, new_two])
 
 #print('new X looks like: \n', new_X.head())
+#print('size of new X is: ', new_X.shape)
 
+new_X.to_csv('../../../../project_dataset_all_traits_with_desc_full_desc.csv', index=False)
 
 # 2. Define training, validation and test sets
 
