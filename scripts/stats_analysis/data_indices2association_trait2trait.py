@@ -55,7 +55,7 @@ for key in clusters.keys():
 print('The clusters and trait descriptions are: \n', clusters_trait_desc)
 
 
-# Compute trait category frequency in each cluster
+# Compute trait frequency in each cluster
 
 clusters_trait_freq={}
 
@@ -67,18 +67,6 @@ for cluster in clusters_trait_categ.keys():
         else:
             clusters_trait_freq[cluster]={trait:0} # initialize trait with count 0
     
-print('The trait category frequencies by cluster are :\n', clusters_trait_freq)  
+print('The trait frequencies by cluster are :\n', clusters_trait_freq)  
 
-# Plot proportion of each trait category by cluster
-
-import pandas as pd
-import seaborn as sns
-
-clusters_traits=pd.DataFrame(clusters_trait_freq)
-clusters_traits_transposed=clusters_traits.transpose()
-
-import matplotlib.pyplot as plt
-
-sns.heatmap(clusters_traits_transposed)
-
-plt.savefig('../../output/traits_immune_gastro_vs_traits_diabetes.png', dpi=500)
+# Generate causality networks
