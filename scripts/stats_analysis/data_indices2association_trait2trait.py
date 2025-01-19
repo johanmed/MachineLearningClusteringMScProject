@@ -4,17 +4,17 @@
 This script uses cluster assignments and their indices (in data_indices_clusters.csv) to establish a relationship between clusters and data (in project_dataset_with_desc_full_desc.csv)
 Extract full description of traits
 Compute statistics of each trait for each cluster
-
 """
+
+# Main 1
 
 # Read files
 
-f1=open('../../../../data_indices_clusters.csv')
+f1=open('../../../../data_indices/data_indices_clusters0.csv') # need to change according to the chunk number
 f1_read=f1.readlines()
 f1.close()
 
-#f2=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
-f2=open('../../../../chunks/chunk0.csv') # for demo
+f2=open('../../../../chunks/chunk0.csv') # need to change according to the chunk number
 f2_read=f2.readlines()
 f2.close()
 
@@ -44,7 +44,19 @@ print('The indices and corresponding trait descriptions are: \n', trait_desc)
 
 # Use relationship between index and trait category to get clusters and trait description instances
 
+import os
+
 clusters_trait_desc={}
+
+
+if os.path.exists('../../../../clusters_trait_desc.csv'):
+    f3=open('../../../../clusters_trait_desc.csv')
+    f3_read=f3.readlines()
+    f3_read.close()
+    for element in f3_read:
+        cluster, categ = element.split(',')
+        clusters_trait_desc[cluster]=categ
+
 
 for key in clusters.keys():
         for val in clusters[key]:
@@ -55,6 +67,21 @@ for key in clusters.keys():
                 
 print('The clusters and trait descriptions are: \n', clusters_trait_desc)
 
+
+# Store clusters and trait category instances on disk
+
+f4=open('../../../../clusters_trait_desc.csv', 'w')
+for key in clusters_trait_desc:
+    f4.write(f'{key}, {clusters_trait_desc[key]}\n')
+
+
+
+
+
+
+
+
+# Main 2
 
 # Compute trait frequency in each cluster
 

@@ -10,12 +10,11 @@ Modelling by qtl (chromosome number)
 
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
-import os
+from vector_data import scaled_training_set as X_train
+from vector_data import scaled_validation_set as X_valid
+from vector_data import scaled_test_set as X_test
 
-os.chdir('../common/') # change to directory with vector_data.py
-
-
-from vector_data import X_train, X_valid, X_test, preprocessing_qtl
+from vector_data import preprocessing_qtl
 
 import numpy as np
 import pandas as pd

@@ -7,29 +7,32 @@ Zoom in chromosome number and marker position
 Assuming they are identical, compare the p-values
 """
 
-# Read association info
 
-#f=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
-f=open('../../../../chunks/chunk0.csv') # for demo
-assoc_info=f.readlines()
-f.close()
+def store_assoc_data(container, file):
+    """
+    Read association info
+    Store each trait and association data in dictionary for efficient lookup
+    """
+    
+    f=open(file) # for demo
+    assoc_info=f.readlines()
+    f.close()
 
-# Store each trait and association data in dictionary for efficient lookup
-
-container={}
-
-for row in assoc_info[1:]: # skip first line that is file header
-    chr_num, pos, af, beta, se, l_mle, p_lrt, desc, full_desc=row.split(',')
-    if full_desc in container.keys():
-        if (chr_num, pos) in (container[full_desc]).keys():
-            container[full_desc][(chr_num, pos)].append(float(p_lrt))
+    for row in assoc_info[1:]: # skip first line that is file header
+        chr_num, pos, af, beta, se, l_mle, p_lrt, desc, full_desc=row.split(',')
+        if full_desc in container.keys():
+            if (chr_num, pos) in (container[full_desc]).keys():
+                container[full_desc][(chr_num, pos)].append(float(p_lrt))
+            else:
+                container[full_desc][(chr_num, pos)]=[float(p_lrt)]
         else:
-            container[full_desc][(chr_num, pos)]=[float(p_lrt)]
-    else:
-        container[full_desc]={(chr_num, pos):[float(p_lrt)]}
+            container[full_desc]={(chr_num, pos):[float(p_lrt)]}
         
-#print('The container is: \n', container)
-print('The length of the container is: ', len(container))
+    #print('The container is: \n', container)
+    #print('The length of the container is: ', len(container))
+    
+    return container
+
 
 def compare_info_trait(trait_pos):
     """
@@ -66,33 +69,80 @@ def analyze_traits(container, compare_info_trait):
     return assoc_diff
     
 
-# Analyze each trait and search for differences in p_lrt that might be relevant statistically
-    
-results=analyze_traits(container, compare_info_trait)
+
+
+
+# Main 1
+
+import os
+
+container={}
+
+# 1. Read data on disk for container if exists
+
+if os.path.exists('../../../../container.csv'):
+    f1=open('../../../../container.csv')
+    read=f.readlines()
+    f1.close()
+    for el in read:
+        key, value=el.split(',')
+        container[key]=value
+
+file='../../../../chunks/chunk0.csv'
+
+dict_data=store_assoc_data(container, file)
+
+# 2. Save new dictionary (container) on disk
+
+f2=open('../../../../container.csv', 'w')
+for key in dict_data:
+    f2.write(f'{key}, {dict_data[key]}\n')
+
+
+
+
+# Main 2
+
+# Proceed to actual analysis of each trait and search for differences in p_lrt that might be relevant statistically
+
+"""
+results=analyze_traits(dict_data, compare_info_trait)
 
 #print('The raw results of the analysis are: \n', results)
-print('The length of results: ', len(results))
+#print('The length of results: ', len(results))
+"""
 
-# Plot pie chart of proportion of traits with differences in their association results across datasets
 
+
+# Main 3
+
+# Plot pie chart of proportion of traits with differences in their association results across datasets after all data
+"""
 import matplotlib.pyplot as plt
 import pandas as pd
 
 fig, ax=plt.subplots()
 
 data=[len(results), len(container)-len(results)]
+
 labels=['Traits with differences', 'Traits with no differences']
-explode=(0, 0.1)
+
+explode=(0.4, 0) # explode the wedge of traits with differences by 0.4
 
 ax.pie(data, labels=labels, colors=['r', 'g'], autopct='%1.2f%%')
 
 ax.set_title('Proportion of traits with differences in association results')
 
 fig.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
+"""
 
+
+
+# Main 4
 
 # Plot vertical bar plot of proportion of differences for all traits with differences in association results
 
+"""
 fig, ax=plt.subplots(figsize=(20, 10))
 
 data=pd.DataFrame([len(results[j]) for j in results.keys()], index=[j for j in results.keys()]) # use the number of differences in each trait to determine the width of each bar
@@ -102,3 +152,4 @@ data.plot.barh(ax=ax, color='black', alpha=0.7, rot=0.2)
 ax.set_title('Proportion of differences in association results')
 
 fig.savefig('../../output/proportion_differences_association_results.png', dpi=500)
+"""

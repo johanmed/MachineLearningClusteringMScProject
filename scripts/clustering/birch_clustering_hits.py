@@ -9,30 +9,30 @@ Modelling by hits (chromosome number + marker position)
 """
 
 
-
 # 1. Import X from vector_data script, select relevant columns and transform in appropriate format
 
 import os
 
-os.chdir('../common/') # change to directory with vector_data.py
+from vector_data import scaled_training_set as X_train
+from vector_data import scaled_validation_set as X_valid
+from vector_data import scaled_test_set as X_test
 
-
-from vector_data import X_train, X_valid, X_test, preprocessing_hits
+from vector_data import preprocessing_hits
 
 import pandas as pd
 import numpy as np
 
 y_train=X_train['desc']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_valid=X_valid['desc']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_test=X_test['desc']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
@@ -108,7 +108,7 @@ def main():
     
         actual_clustering=joblib.load('birch_clustering/birch_clustering_hits.pkl')
         
-        actual_clustering.fit(X_train, features)
+        actual_clustering.fit(X_train_features)
         
         y_pred=actual_clustering.predict(X_valid_features)
         
@@ -117,12 +117,14 @@ def main():
         #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering, X_train_features)
 
         Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering, X_valid_features)
+        
+        joblib.dump(actual_clustering, 'birch_clustering/birch_clustering_hits.pkl')
 
     else:
     
         actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
     
-        joblib.dump(actual_clustering, 'birch_clustering/birch_clustering_hits.pkl')
+        joblib.dump(actual_clustering[1], 'birch_clustering/birch_clustering_hits.pkl')
 
         #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
 

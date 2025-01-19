@@ -7,14 +7,15 @@ Compute statistics of each trait category for each cluster
 Show proportions of immune and gastrointestinal system traits vs proportion of diabetes traits by cluster
 """
 
+# Main 1
+
 # Read files
 
-f1=open('../../../../data_indices_clusters.csv')
+f1=open('../../../../data_indices/data_indices_clusters0.csv') # need to change according to the chunk number
 f1_read=f1.readlines()
 f1.close()
 
-#f2=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
-f2=open('../../../../chunks/chunk0.csv') # for demo
+f2=open('../../../../chunks/chunk0.csv') # need to change according to the chunk number
 f2_read=f2.readlines()
 f2.close()
 
@@ -44,7 +45,17 @@ print('The indices and corresponding trait categories are: \n', trait_categ)
 
 # Use relationship between index and trait category to get clusters and trait category instances
 
+import os
+
 clusters_trait_categ={}
+
+if os.path.exists('../../../../clusters_trait_categ.csv'):
+    f3=open('../../../../clusters_trait_categ.csv')
+    f3_read=f3.readlines()
+    f3_read.close()
+    for element in f3_read:
+        cluster, categ = element.split(',')
+        clusters_trait_categ[cluster]=categ
 
 for key in clusters.keys():
         for val in clusters[key]:
@@ -55,9 +66,23 @@ for key in clusters.keys():
                 
 print('The clusters and trait category instances are: \n', clusters_trait_categ)
 
+# Store clusters and trait category instances on disk
+
+f4=open('../../../../clusters_trait_categ.csv', 'w')
+for key in clusters_trait_categ:
+    f4.write(f'{key}, {clusters_trait_categ[key]}\n')
+
+
+
+
+
+
+
+# Main 2
 
 # Compute trait category frequency in each cluster
 
+"""
 clusters_trait_freq={}
 
 for cluster in clusters_trait_categ.keys():
@@ -70,8 +95,17 @@ for cluster in clusters_trait_categ.keys():
     
 print('The trait category frequencies by cluster are :\n', clusters_trait_freq)  
 
+"""
+
+
+
+
+
+# Main 3
+
 # Plot proportion of each trait category by cluster
 
+"""
 import pandas as pd
 
 clusters_traits=pd.DataFrame(clusters_trait_freq)
@@ -82,3 +116,4 @@ import matplotlib.pyplot as plt
 clusters_traits_transposed.plot.bar()
 
 plt.savefig('../../output/traits_immune_gastro_vs_traits_diabetes.png', dpi=500)
+"""

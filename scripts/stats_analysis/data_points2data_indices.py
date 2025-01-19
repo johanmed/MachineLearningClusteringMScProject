@@ -7,8 +7,6 @@ This script uses best clustering model to extract data index and cluster assignm
 import os
 import tensorflow as tf
 
-os.chdir('../common') # change to common directory to get vector_data module
-
 from vector_data import processed_X, preprocessing_qtl
 
 y_full=processed_X['desc']
@@ -74,7 +72,10 @@ def main():
             container.append([i, j]) # save data index and cluster assigned
             
         to_save=pd.DataFrame(container)
-        to_save.to_csv('../../../../data_indices_clusters.csv', index=False, header=False)
+        
+        num=int(input('Which chunk number are you analyzing?: '))
+        
+        to_save.to_csv(f'../../../../data_indices/data_indices_clusters{num}.csv', index=False, header=False)
             
     else:
         print('Best model not found, sorry :)')

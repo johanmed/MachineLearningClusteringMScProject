@@ -18,25 +18,26 @@ Modelling by hits (chromosome number + chromosomal position)
 
 import os
 
-os.chdir('../common/') # change to directory with vector_data.py
+from vector_data import scaled_training_set as X_train
+from vector_data import scaled_validation_set as X_valid
+from vector_data import scaled_test_set as X_test
 
-
-from vector_data import X_train, X_valid, X_test, preprocessing_hits
+from vector_data import preprocessing_hits
 
 import pandas as pd
 import numpy as np
 
 y_train=X_train['desc']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_valid=X_valid['desc']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_test=X_test['desc']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
@@ -128,7 +129,7 @@ def main():
     
         actual_clustering=joblib.load('kmeans_clustering/kmeans_clustering_hits.pkl')
         
-        actual_clustering.fit(X_train, features)
+        actual_clustering.fit(X_train_features)
         
         y_pred=actual_clustering.predict(X_valid_features)
         
@@ -137,12 +138,14 @@ def main():
         #Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering, X_train_features)
 
         Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering, X_valid_features)
+        
+        joblib.dump(actual_clustering, 'kmeans_clustering/kmeans_clustering_hits.pkl')
 
     else:
 
         actual_clustering=clustering_task.perform_kmeans_clustering(X_valid_features)
         
-        joblib.dump(actual_clustering, 'kmeans_clustering/kmeans_clustering_hits.pkl')
+        joblib.dump(actual_clustering[0][1], 'kmeans_clustering/kmeans_clustering_hits.pkl')
 
         Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
 

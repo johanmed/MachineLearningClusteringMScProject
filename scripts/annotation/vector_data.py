@@ -19,7 +19,7 @@ import pandas as pd
 
 import os
 
-sample_chunk=pd.read_csv('../../../../chunks/chunk{ind}.csv', index_col=False))
+sample_chunk=pd.read_csv('../../../../chunks/chunk0.csv', index_col=False)
 
 # 2. Define training, validation and test sets
 
@@ -38,16 +38,20 @@ def define_sets(X):
 
 training_set, validation_set, test_set=define_sets(sample_chunk) # for demo
 
+processed_X=pd.concat([training_set, validation_set, test_set])
+
 
 # 4. Plot histogram of training features and assess quality
 
 import matplotlib.pyplot as plt # import plot manager
+import os
 
 out_dir=os.path.abspath('../../output/')
 
-training_set.hist(bins=50, color='black', alpha=0.2) # for demo
-plt.show()
-plt.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"), dpi=500)
+fig, ax=plt.subplots(figsize=(20, 10))
+training_set.hist(ax=ax, bins=50, color='black', alpha=0.2) # for demo
+#plt.show()
+fig.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"), dpi=500)
 
 
 
@@ -144,9 +148,10 @@ scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered2_tra
 
 # 9. Plot histogram of transformed training features and confirm quality
 
-scaled_training_set.hist(bins=50, color='black', alpha=0.2)
-plt.show()
-plt.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"), dpi=500)
+fig, ax=plt.subplots(figsize=(20, 20))
+scaled_training_set.hist(ax=ax, bins=50, color='black', alpha=0.2)
+#plt.show()
+fig.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"), dpi=500)
 
 
 # 10. Wrap up all transformations in a Transformer and add PCA to 2d for one_hot_desc, p_lrt, chr_num and pos
@@ -157,6 +162,6 @@ from sklearn.decomposition import PCA
 
 custom_preprocessing=Pipeline([('cluster', KMeans(n_clusters=5, algorithm='elkan', random_state=2024)), ('standardize', StandardScaler()), ('reduce', PCA(n_components=2, random_state=2024))])
 
-preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
+preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
 
-preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num'])], remainder=StandardScaler())
+preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num'])], remainder=StandardScaler())
