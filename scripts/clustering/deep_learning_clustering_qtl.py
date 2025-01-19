@@ -171,6 +171,8 @@ def main():
         best_model.save('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
 
     actual_clustering=clustering_task.perform_neural_clustering(best_model)
+    
+    actual_clustering.save('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
 
     Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 

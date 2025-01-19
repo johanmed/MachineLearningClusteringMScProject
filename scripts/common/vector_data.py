@@ -16,26 +16,10 @@ import pandas as pd
 
 #chunks= pd.read_csv('../../../../project_dataset_all_traits_with_desc_full_desc.csv', index_col=False, chunksize=1e7) # data read in chunks
 
-"""
-for ind, chunk in enumerate(chunks):
-    chunk.to_csv(f'../../../../chunks/chunk{ind}.csv', index=False) # Save chunks on disk for ease of reading and referencing
-"""
 
 import os
 
-"""
-chunks_files=[os.path.join('../../../../chunks/', file) for file in os.listdir('../../../../chunks/')]
-
-list_chunks=[] # store dataframes in a list
-
-for file in chunks_files:
-    list_chunks.append(pd.read_csv(file, index_col=False))
-
-#print(list_chunks[0].head())
-
-"""
-
-sample_chunk=pd.read_csv('../../../../chunks/chunk0.csv', index_col=False) # for demo
+sample_chunk=pd.read_csv('../../../../chunks/chunk{ind}.csv', index_col=False))
 
 # 2. Define training, validation and test sets
 
@@ -54,22 +38,12 @@ def define_sets(X):
 
 training_set, validation_set, test_set=define_sets(sample_chunk) # for demo
 
-#training_sets, validation_sets, test_sets=[define_sets(X)[0] for X in list_chunks], [define_sets(X)[1] for X in list_chunks], [define_sets(X)[2] for X in list_chunks]
 
 # 4. Plot histogram of training features and assess quality
 
 import matplotlib.pyplot as plt # import plot manager
 
 out_dir=os.path.abspath('../../output/')
-
-"""
-fig, axes=subplots(nrows=2, ncols=int(len(training_sets)/2), figsize=(30, 20))
-
-for ind1, element in enumerate(training_sets):
-    for ind2, ax in enumerate(axes):
-        if ind1==ind2:, fig_size=(20, 10)
-            element.hist(ax=ax, bins=50, color='black', alpha=0.2)
-"""
 
 training_set.hist(bins=50, color='black', alpha=0.2) # for demo
 plt.show()
@@ -100,9 +74,6 @@ def hot_encode(X_train, X_valid, X_test):
 
 encoded_training_set, encoded_validation_set, encoded_test_set=hot_encode(training_set, validation_set, test_set) # for demo
 
-#encoded_training_sets=[hot_encode(a, b, c)[0] for a, b, c in zip(training_sets, validation_sets, test_sets)]
-#encoded_validation_sets=[hot_encode(a, b, c)[1] for a, b, c in zip(training_sets, validation_sets, test_sets)]
-#encoded_test_sets=[hot_encode(a, b, c)[2] for a, b, c in zip(training_sets, validation_sets, test_sets)]
 
 # 6. Extract clusters using OneHotEncoding categories and p_lrt
 
@@ -125,10 +96,6 @@ def perform_clustering_one(X_train, X_valid, X_test):
  
 clustered1_training_set, clustered1_validation_set, clustered1_test_set=perform_clustering_one(encoded_training_set, encoded_validation_set, encoded_test_set) # for demo
 
-#clustered1_training_sets=[perform_clustering_one(a, b, c)[0] for a, b, c in zip(encoded_training_sets, encoded_validation_sets, encoded_test_sets)]
-#clustered1_validation_sets=[perform_clustering_one(a, b, c)[1] for a, b, c in zip(tencoded_training_sets, encoded_validation_sets, encoded_test_sets)]
-#clustered1_test_sets=[perform_clustering_one(a, b, c)[2] for a, b, c in zip(encoded_training_sets, encoded_validation_sets, encoded_test_sets)]
-
 
 # 7. Extract clusters using chr_num and chr_pos
 
@@ -148,10 +115,6 @@ def perform_clustering_two(X_train, X_valid, X_test):
 
 
 clustered2_training_set, clustered2_validation_set, clustered2_test_set=perform_clustering_two(clustered1_training_set, clustered1_validation_set, clustered1_test_set) # for demo
-
-#clustered2_training_sets=[perform_clustering_two(a, b, c)[0] for a, b, c in zip(clustered1_training_sets, clustered1_validation_sets, clustered1_test_sets)]
-#clustered2_validation_sets=[perform_clustering_two(a, b, c)[1] for a, b, c in zip(clustered1_training_sets, clustered1_validation_sets, clustered1_test_sets)]
-#clustered2_test_sets=[perform_clustering_two(a, b, c)[2] for a, b, c in zip(clustered1_training_sets, clustered1_validation_sets, clustered1_test_sets)]
 
 
 # 8. Perform feature engineering
@@ -178,20 +141,9 @@ def scale(X_train, X_valid, X_test):
 
 scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered2_training_set, clustered2_validation_set, clustered2_test_set) # for demo
 
-#scaled_training_sets=[scale(a, b, c)[0] for a, b, c in zip(clustered2_training_sets, clustered2_validation_sets, clustered2_test_sets)]
-#scaled_validation_sets=[scale(a, b, c)[1] for a, b, c in zip(clustered2_training_sets, clustered2_validation_sets, clustered2_test_sets)]
-#scaled_test_sets=[scale(a, b, c)[2] for a, b, c in zip(clustered2_training_sets, clustered2_validation_sets, clustered2_test_sets)]
 
 # 9. Plot histogram of transformed training features and confirm quality
 
-"""
-fig, axes=subplots(nrows=2, ncols=int(len(scaled_training_sets)/2), figsize=(30, 20))
-
-for ind1, element in enumerate(scaled_training_sets):
-    for ind2, ax in enumerate(axes):
-        if ind1==ind2:
-            element.hist(ax=ax, bins=50, color='black', alpha=0.2)
-"""
 scaled_training_set.hist(bins=50, color='black', alpha=0.2)
 plt.show()
 plt.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"), dpi=500)

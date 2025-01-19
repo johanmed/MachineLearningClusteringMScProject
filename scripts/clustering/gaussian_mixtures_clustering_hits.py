@@ -98,13 +98,33 @@ class Columns2Clustering(ModellingGaussian):
 
 # Main
 
+import joblib
+
 def main():
 
     clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    
+    if os.path.exists('gaussian_clustering/gaussian_clustering_hits.pkl'):
+    
+        actual_clustering=joblib.load('gaussian_clustering/gaussian_clustering_hits.pkl')
+        
+        actual_clustering.fit(X_train, features)
+        
+        y_pred=actual_clustering.predict(X_valid_features)
+        
+        print('The silhouette score obtained as clustering performance measure is:', silhouette_score(X_valid_features, y_pred))
+        
+        #Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering, X_train_features)
+
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering, X_valid_features)
+
+    else:
 
     actual_clustering, prediction_clusters_valid=clustering_task.perform_bgm(X_valid_features)
+    
+    joblib.dump(actual_clustering, 'gaussian_clustering/gaussian_clustering_hits.pkl')
 
     Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, actual_clustering[1], X_train_features)
 

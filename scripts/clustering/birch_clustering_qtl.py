@@ -104,12 +104,30 @@ def main():
     clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    
+    if os.path.exists('birch_clustering/birch_clustering_qtl.pkl'):
+    
+        actual_clustering=joblib.load('birch_clustering/birch_clustering_qtl.pkl')
+        
+        actual_clustering.fit(X_train, features)
+        
+        y_pred=actual_clustering.predict(X_valid_features)
+        
+        print('The silhouette score obtained as clustering performance measure is:', silhouette_score(X_valid_features, y_pred))
+        
+        #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering, X_train_features)
 
-    actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering, X_valid_features)
 
-    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
+    else:
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_valid_features)
+        actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
+        
+        joblib.dump(actual_clustering, 'birch_clustering/birch_clustering_qtl.pkl')
+
+        #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
+
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_valid_features)
 
 
 

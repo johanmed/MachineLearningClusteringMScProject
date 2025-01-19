@@ -117,21 +117,41 @@ class Columns2Clustering(ModellingKMeans):
 
 # Main
 
+import joblib
+
 def main():
 
     clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+    
+    if os.path.exists('kmeans_clustering/kmeans_clustering_qtl.pkl'):
+    
+        actual_clustering=joblib.load('kmeans_clustering/kmeans_clustering_qtl.pkl')
+        
+        actual_clustering.fit(X_train, features)
+        
+        y_pred=actual_clustering.predict(X_valid_features)
+        
+        print('The silhouette score obtained as clustering performance measure is:', silhouette_score(X_valid_features, y_pred))
+        
+        #Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering, X_train_features)
 
-    actual_clustering=clustering_task.perform_kmeans_clustering(X_valid_features)
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering, X_valid_features)
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
+    else:
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
+        actual_clustering=clustering_task.perform_kmeans_clustering(X_valid_features)
+        
+        joblib.dump(actual_clustering, 'kmeans_clustering/kmeans_clustering_qtl.pkl')
 
-    prediction_clusters=actual_clustering[1]
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_train_features)
 
-    distances_centroids_validation=actual_clustering[2]
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_kmeans, actual_clustering[0][1], X_valid_features)
+
+        prediction_clusters=actual_clustering[1]
+
+        distances_centroids_validation=actual_clustering[2]
 
     
 
