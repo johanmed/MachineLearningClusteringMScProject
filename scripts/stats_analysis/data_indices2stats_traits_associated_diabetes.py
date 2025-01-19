@@ -13,7 +13,8 @@ f1=open('../../../../data_indices_clusters.csv')
 f1_read=f1.readlines()
 f1.close()
 
-f2=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
+#f2=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
+f2=open('../../../../chunks/chunk0.csv') # for demo
 f2_read=f2.readlines()
 f2.close()
 

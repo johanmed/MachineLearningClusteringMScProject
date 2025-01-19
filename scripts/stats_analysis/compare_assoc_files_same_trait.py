@@ -9,7 +9,8 @@ Assuming they are identical, compare the p-values
 
 # Read association info
 
-f=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
+#f=open('../../../../project_dataset_all_traits_with_desc_full_desc.csv')
+f=open('../../../../chunks/chunk0.csv') # for demo
 assoc_info=f.readlines()
 f.close()
 
@@ -77,22 +78,26 @@ print('The length of results: ', len(results))
 import matplotlib.pyplot as plt
 import pandas as pd
 
-data=pd.DataFrame([len(results), len(container)-len(results)], index=['Traits with differences', 'Traits with no differences'])
+fig, ax=plt.subplots()
 
-data.plot.pie(y=0)
+data=[len(results), len(container)-len(results)]
+labels=['Traits with differences', 'Traits with no differences']
+explode=(0, 0.1)
 
-plt.suptitle('Proportion of traits with differences in association results')
+ax.pie(data, labels=labels, colors=['r', 'g'], autopct='%1.2f%%')
 
-plt.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
+ax.set_title('Proportion of traits with differences in association results')
+
+fig.savefig('../../output/proportion_traits_with_differences.png', dpi=500)
 
 
 # Plot vertical bar plot of proportion of differences for all traits with differences in association results
 
-fig, ax=plt.subplots()
+fig, ax=plt.subplots(figsize=(20, 10))
 
 data=pd.DataFrame([len(results[j]) for j in results.keys()], index=[j for j in results.keys()]) # use the number of differences in each trait to determine the width of each bar
 
-data.plot.bar(ax=ax, color='black', alpha=0.7)
+data.plot.barh(ax=ax, color='black', alpha=0.7, rot=0.2)
 
 ax.set_title('Proportion of differences in association results')
 
