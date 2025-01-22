@@ -19,7 +19,7 @@ import pandas as pd
 
 import os
 
-sample_chunk=pd.read_csv('../../../../chunks/chunk0.csv', index_col=False)
+sample_chunk=pd.read_csv('../../../../chunks/chunk3.csv', index_col=False)
 
 # 2. Define training, validation and test sets
 
