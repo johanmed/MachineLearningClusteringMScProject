@@ -14,10 +14,11 @@ Modelling by QTL peaks (chromosome number)
 
 import os
 
-os.chdir('../common/') # change to directory with vector_data.py
+from vector_data import scaled_training_set as X_train
+from vector_data import scaled_validation_set as X_valid
+from vector_data import scaled_test_set as X_test
 
-
-from vector_data import X_train, X_valid, X_test, preprocessing_qtl
+from vector_data import preprocessing_qtl
 
 import pandas as pd
 import numpy as np
@@ -101,15 +102,23 @@ class Columns2Clustering(ModellingBirch):
 
 def main():
 
-    clustering_task=Columns2Clustering(X_train, X_valid, X_test)
+    if os.path.exists('birch_clustering/birch_clustering_qtl.pkl'):
+        
+        print('The model has already been trained and saved on disk!')
+    
+    else:
 
-    X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+        clustering_task=Columns2Clustering(X_train, X_valid, X_test)
 
-    actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
+        X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
 
-    #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
+        actual_clustering, prediction_clusters_valid=clustering_task.perform_birch(X_valid_features)
 
-    Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_valid_features)
+        joblib.dump(actual_clustering[1], 'birch_clustering/birch_clustering_qtl.pkl')
+   
+        #Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_train_features)
+    
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_birch, actual_clustering[1], X_valid_features)
 
 
 

@@ -15,11 +15,7 @@ Data of each column of the training are plotted in histogram to confirm quality
 import numpy as np
 import pandas as pd
 
-store=pd.HDFStore('../../../../project_all_data.h5')
-
-part_X=pd.concat([store['chr_num'], store['pos'], store['p_lrt']], axis=1)
-
-full_X=pd.concat([part_X, store['desc']], axis=1)
+full_X=pd.read_csv('../../../../project_dataset_all_traits_p_lrt_filtered.csv', usecols=['chr_num', 'pos', 'p_lrt', 'desc'])
 
 print('full_X looks like: \n', full_X)
 
@@ -44,7 +40,7 @@ import os
 out_dir=os.path.abspath('../../output/')
 
 fig, ax=plt.subplots(figsize=(20, 10))
-training_set.hist(ax=ax, bins=50, color='black', alpha=0.1)
+training_set.hist(ax=ax, bins=50, color='black', alpha=0.7)
 plt.show()
 fig.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation"), dpi=500)
 
@@ -138,7 +134,7 @@ def scale(X_train, X_valid, X_test):
             std_scaler3=std_scaler.transform((np.array(X_test[i])).reshape(-1, 1)) # fit transformer on training set
             X_test['transformed_'+ i]=std_scaler3
     
-    return X
+    return X_train, X_valid, X_test
 
 
 scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered2_training_set, clustered2_validation_set, clustered2_test_set)
@@ -146,8 +142,8 @@ scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered2_tra
 
 # 8. Plot histogram of transformed training features and confirm quality
 
-fig, axes=plt.subplots(figsize=(20, 20))
-scaled_training_set.hist(ax=ax, bins=50, color='black', alpha=0.1)
+fig, ax=plt.subplots(figsize=(20, 20))
+scaled_training_set.hist(ax=ax, bins=50, color='black', alpha=0.7)
 plt.show()
 fig.savefig(os.path.join(out_dir, "Project_Quality_Check_After_Transformation"), dpi=500)
 

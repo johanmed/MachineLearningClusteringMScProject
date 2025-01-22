@@ -13,10 +13,11 @@ Modelling by hits (chromosome number + marker position)
 
 import os
 
-os.chdir('../common/') # change to directory with vector_data.py
+from vector_data import scaled_training_set as X_train
+from vector_data import scaled_validation_set as X_valid
+from vector_data import scaled_test_set as X_test
 
-
-from vector_data import X_train, X_valid, X_test, preprocessing_hits
+from vector_data import preprocessing_hits
 
 import numpy as np
 import pandas as pd
@@ -150,6 +151,8 @@ def main():
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
     
     if os.path.exists('deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
+        
+        print('The model has already been trained and saved on disk!')
         
         best_model=tf.keras.models.load_model('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
         
