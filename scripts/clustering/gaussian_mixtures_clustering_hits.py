@@ -93,17 +93,27 @@ class Columns2Clustering(ModellingGaussian):
         """
         plt.figure(figsize=(10, 10))
         plot_bgm(bgm_clustering, X_train, size)
-        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_hits"), dpi=500)
         
 
 
 # Main
+
+import joblib
 
 def main():
     
     if os.path.exists('gaussian_clustering/gaussian_clustering_hits.pkl'):
     
         print('The model has already been trained and saved on disk!')
+        
+        clustering_task=Columns2Clustering(X_train, X_valid, X_test)
+
+        X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
+        
+        model=joblib.load('gaussian_clustering/gaussian_clustering_hits.pkl')
+        
+        Columns2Clustering.visualize_plot(Columns2Clustering.plot_bgm, model, X_valid_features)
     
     else:
 

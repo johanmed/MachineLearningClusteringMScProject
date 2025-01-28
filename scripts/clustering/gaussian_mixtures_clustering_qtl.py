@@ -95,12 +95,14 @@ class Columns2Clustering(ModellingGaussian):
         """
         plt.figure(figsize=(10, 10))
         plot_bgm(bgm_clustering, X_train, size)
-        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_qtl"))
+        plt.savefig(os.path.join(out_dir, f"GaussianMixture_clustering_result_by_qtl"), dpi=500)
 
 
 
 
 # Main
+
+import joblib
 
 def main():
     

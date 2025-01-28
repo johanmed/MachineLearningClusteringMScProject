@@ -83,12 +83,12 @@ class Columns2Clustering:
         return preprocessed_training, preprocessed_validation, preprocessed_test
         
 
-    def perform_neural_clustering(self, best_clustering_model):
+    def perform_neural_clustering(self, best_clustering_model, X_valid_features, y_train, y_valid):
         """
         Perform neural clustering on 2 features columns using best model extracted from tuning
         """
         neural_clustering=Pipeline([('preprocessing_qtl', preprocessing_qtl), ('best_clustering_model', best_clustering_model)])
-        neural_clustering.fit(self.training, y_train, best_clustering_model__epochs=10)
+        neural_clustering.fit(self.training, y_train, best_clustering_model__validation_data=(X_valid_features, y_valid))
         
         return neural_clustering
     
@@ -126,7 +126,7 @@ class Columns2Clustering:
         plt.scatter(X_train[:, 0], X_train[:, 1], c=clusters_unsup_train)
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
-        plt.savefig(os.path.join(out_dir, f"Deep_learning_clustering_result_by_qtl"))
+        plt.savefig(os.path.join(out_dir, f"Deep_learning_clustering_result_by_qtl"), dpi=500)
         
         
      
@@ -153,29 +153,35 @@ def main():
     
     if os.path.exists('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras'):
         
-        print('The model has already been trained and saved on disk!')
+        print('The model has already been trained and saved on disk. See deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras!')
         
         best_model=tf.keras.models.load_model('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
         
     else:
     
-        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=3, overwrite=True, directory='deep_learning_clustering_qtl', project_name='hyperband')
+        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=2, overwrite=True, directory='deep_learning_clustering_qtl', project_name='hyperband')
+        
+        checkpoint_cb = tf.keras.callbacks.ModelCheckpoint('deep_learning_clustering_qtl/best_checkpoint.keras', save_best_only=True)
     
-        early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=5)
+        early_stopping_cb=tf.keras.callbacks.EarlyStopping(patience=2)
     
         tensorboard_cb=tf.keras.callbacks.TensorBoard(Path(hyperband_tuner.project_dir)/'tensorflow'/strftime("run_%Y_%m_%d_%H_%M_%S"))
     
-        hyperband_tuner.search(X_train_features, y_train, epochs=10, validation_data=(X_valid_features, y_valid), callbacks=[early_stopping_cb, tensorboard_cb])
+        hyperband_tuner.search(X_train_features, y_train, epochs=10, validation_data=(X_valid_features, y_valid), callbacks=[checkpoint_cb, early_stopping_cb, tensorboard_cb])
     
         top3_models=hyperband_tuner.get_best_models(num_models=3)
     
         best_model=top3_models[0]
         
         best_model.save('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
+        
+        best_trial=hyperband_tuner.oracle.get_best_trials(num_trials=1)[0]
+        
+        print('The best trial has the following parameters:\n', best_trial.summary())
 
-    actual_clustering=clustering_task.perform_neural_clustering(best_model)
+    actual_clustering=clustering_task.perform_neural_clustering(best_model, X_valid_features, y_train, y_valid)
 
-    Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
+    #Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 
     Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features, Columns2Clustering.get_clusters_labels)
 
