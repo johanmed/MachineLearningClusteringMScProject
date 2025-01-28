@@ -100,6 +100,8 @@ class Columns2Clustering(ModellingBirch):
 
 # Main
 
+import joblib
+
 def main():
 
     if os.path.exists('birch_clustering/birch_clustering_qtl.pkl'):

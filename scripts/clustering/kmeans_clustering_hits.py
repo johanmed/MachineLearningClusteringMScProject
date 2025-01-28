@@ -110,7 +110,7 @@ class Columns2Clustering(ModellingKMeans):
         
         plt.figure(figsize=(10, 10))
         plot_kmeans(clusterer, X_train, Columns2Clustering.plot_decision_boundaries)
-        plt.savefig(os.path.join(out_dir, f"MiniBatchKMeans_clustering_result_by_hits"))
+        plt.savefig(os.path.join(out_dir, f"MiniBatchKMeans_clustering_result_by_hits"), dpi=500)
         
         
   
