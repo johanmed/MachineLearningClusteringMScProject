@@ -1,56 +1,10 @@
 #!/usr/bin/env python
 
 """
-Read association info in csv file
-Take rows concerning same trait
+Takes dictionary of association data
 Zoom in chromosome number and marker position
-Assuming they are identical, compare the p-values
+Assuming they are identical, compare the p-values stored
 """
-
-# Module
-
-def store_assoc_data(container, file):
-    """
-    Read association info
-    Store each trait and association data in dictionary for efficient lookup
-    """
-    
-    f=open(file) # for demo
-    assoc_info=f.readlines()
-    f.close()
-    
-    to_process=assoc_info[1:] # skip first line that is file header
-    
-    num_processing=len(to_process)
-    
-    for row in to_process:
-        num_processing -= 1
-        print(f'{num_processing} remaining lines to process')
-        chr_num, pos, af, beta, se, l_mle, p_lrt, desc, full_desc=row.split(',')
-        full_desc=full_desc.strip('\n')
-        desc_full_desc = desc + ' ' + full_desc
-        chr_num_pos= chr_num + ' ' + pos
-        
-        found_similar=False
-        
-        for key in container.keys():
-            diff=set(desc_full_desc.split(' ')).difference(set(key.split(' ')))
-            if 0<=len(diff)<=5: # similarity between two traits descriptions found if number of difference in words <= 5
-                if chr_num_pos in container[key].keys():
-                    container[key][chr_num_pos].append(float(p_lrt))
-                else:
-                    container[key][chr_num_pos]=[float(p_lrt)]
-                        
-                found_similar=True
-                break
-        
-        if not found_similar:
-            container[desc_full_desc] = {chr_num_pos: [float(p_lrt)]}
-            
-        #print('The container is: \n', container)
-        #print('The length of the container is: ', len(container))
-    
-    return container
 
 
 def compare_info_trait(trait_pos):
@@ -87,66 +41,36 @@ def analyze_traits(container, compare_info_trait):
     
     return assoc_diff
     
+    
+    
+    
+    
+    
+# Read data stored in dictionary
 
-
-
-
-# Main 1
-
-import os
 import json
 
-container={}
+f=open('../../../../container.json')
+json_content=f.read()
+f.close()
 
-# 1. Read data on disk for container if exists
+json_content2dict=json.loads(json_content)
 
-if os.path.exists('../../../../container.json'):
-    f1=open('../../../../container.json')
-    json_content=f1.read()
-    f1.close()
-    
-    json_content2dict=json.loads(json_content)
-    #print(json_content2dict)
-    
-    container=json_content2dict
-
-file='../../../../chunks/chunk0.csv'
-
-#print(container)
-
-dict_data=store_assoc_data(container, file)
-
-#print(dict_data)
-
-# 2. Save new dictionary (container) on disk
-
-f2=open('../../../../container.json', 'w')
-
-dict2json_content=json.dumps(dict_data)
-f2.write(dict2json_content)
-
-f2.close()
-
-
-
-
-# Main 2
 
 # Proceed to actual analysis of each trait and search for differences in p_lrt that might be relevant statistically
 
-"""
-results=analyze_traits(dict_data, compare_info_trait)
+
+results=analyze_traits(json_content2dict, compare_info_trait)
 
 #print('The raw results of the analysis are: \n', results)
-#print('The length of results: ', len(results))
-"""
+print('The number of traits with dichotomy in association data: ', len(results))
 
 
 
-# Main 3
+
+
 
 # Plot pie chart of proportion of traits with differences in their association results across datasets after all data
-"""
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
@@ -154,18 +78,19 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 
-fig, (ax1, ax2)=plt.subplots(1, 2)
+np.random.seed(2024)
+
+fig, (ax1, ax2)=plt.subplots(1, 2, figsize=(20, 10))
 
 # pie chart parameters
-data=[len(results), len(container)-len(results)]
-angle=-180 * data[0]
+data=[len(results), len(json_content2dict)-len(results)]
 labels=['Traits with differences', 'Traits with no differences']
 explode=(0.1, 0)
 
-wedges, *so= ax1.pie(data, labels=labels, colors=['r', 'g'], autopct='%1.2f%%', explode=explode, labeldistance=1.0, startangle=angle)
+wedges, *so= ax1.pie(data, labels=labels, colors=['r', 'g'], autopct='%1.2f%%', explode=explode, startangle=-30)
 
 # bar chart parameters
-return_desc=[desc for (desc, full_desc) in results.keys()]
+return_desc=[int(desc_full_desc[0]) for desc_full_desc in results.keys()]
 dic_desc= Counter(return_desc)
 trait_categs=dic_desc.keys()
 trait_categ_metadata={0:'Diabetes', 1: 'Immune system', 2: 'Gastrointestinal system', 3: 'Unknown'}
@@ -177,7 +102,7 @@ width=0.2
 
 for j, (height, label) in enumerate([*zip(freqs, trait_categs)]):
     bottom -= height
-    bar_container=ax2.bar(0, height, width, bottom=bottom, color='C0', label=label, alpha=1+0.25*j)
+    bar_container=ax2.bar(0, height, width, bottom=bottom, color='C0', label=label, alpha=0.1+0.25*j)
     ax2.bar_label(bar_container, labels=[f'{height:.0%}'], label_type='center')
     
 ax2.set_title('Trait categories')
@@ -215,27 +140,36 @@ plt.show()
 fig.savefig('../../output/Proportion_traits_with_differences.png', dpi=500)
 
 
-"""
 
 
-
-# Main 4
 
 # Plot vertical bar plot of proportion of differences for all traits with differences in association results
 
-"""
 
-fig, ax=plt.subplots(figsize=(20, 10))
+fig, ax=plt.subplots(figsize=(20, 20))
 
-data=pd.DataFrame([len(results[j]) for j in results.keys()], index=[j for j in results.keys()]) # use the number of differences in each trait to determine the width of each bar
+diff_traits= [j[3:] for j in results.keys() if (j != '0' or j != '1' or j != '2' or j != '3') and len(j.split(' '))<=5] # remove trait category from string and select traits with short names
+rand_traits=np.random.choice(diff_traits, 20)
 
-data.plot.barh(ax=ax, color='black', alpha=0.7, rot=0.2, legend=False, position=1)
+freq_rand_traits=[]
 
-ax.set_title('Proportion of differences in association results')
+for el in rand_traits:
+    for key in results.keys():
+        if el in key:
+            freq_rand_traits.append(len(results[key]))
+
+data=pd.DataFrame(freq_rand_traits, index=rand_traits) # use the number of differences in each trait to determine the width of each bar
+
+data.plot.barh(ax=ax, color='black', alpha=0.7, legend=False, position=1)
+
+ax.set_xlabel('Number of differences at genomic locations')
+
+ax.set_title('Proportion of differences in association results for a random selection of 20 problematic traits')
+
+plt.show()
 
 fig.savefig('../../output/Proportion_differences_association_results.png', dpi=500)
 
-"""
 
 
 
