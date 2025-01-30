@@ -24,15 +24,15 @@ import pandas as pd
 
 y_train=X_train['desc']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_valid=X_valid['desc']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 y_test=X_test['desc']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set

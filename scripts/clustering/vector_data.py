@@ -15,7 +15,7 @@ Data of each column of the training are plotted in histogram to confirm quality
 import numpy as np
 import pandas as pd
 
-full_X=pd.read_csv('../../../../project_dataset_all_traits_p_lrt_filtered.csv', usecols=['chr_num', 'pos', 'p_lrt', 'desc'])
+full_X=pd.read_csv('../../../../project_dataset_all_traits_p_lrt_filtered.csv', usecols=['chr_num', 'pos', 'p_lrt', 'desc', 'full_desc'])
 
 print('full_X looks like: \n', full_X)
 
@@ -31,6 +31,15 @@ def define_sets(X):
     
 training_set, validation_set, test_set=define_sets(full_X)
 
+# Get training + validation with full_desc
+
+training_validation_set=pd.concat([training_set, validation_set]) # useful later clustering results analysis
+
+# Remove full_desc
+
+training_set= training_set[['chr_num', 'pos', 'p_lrt', 'desc']]
+validation_set= validation_set[['chr_num', 'pos', 'p_lrt', 'desc']]
+test_set= test_set[['chr_num', 'pos', 'p_lrt', 'desc']]
 
 # 3. Plot histogram of training features and assess quality
 
@@ -156,6 +165,6 @@ from sklearn.decomposition import PCA
 
 custom_preprocessing=Pipeline([('cluster', KMeans(n_clusters=5, algorithm='elkan', random_state=2024)), ('standardize', StandardScaler()), ('reduce', PCA(n_components=2, random_state=2024))])
 
-preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
+preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
 
-preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num'])], remainder=StandardScaler())
+preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3','one_hot_desc4', 'p_lrt', 'chr_num'])], remainder=StandardScaler())

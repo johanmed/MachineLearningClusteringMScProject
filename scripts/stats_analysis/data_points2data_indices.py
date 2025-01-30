@@ -5,15 +5,17 @@ This script uses best clustering model to extract data index and cluster assignm
 """
 
 import os
+import pandas as pd
 import tensorflow as tf
+from random import choice
 
-os.chdir('../common') # change to common directory to get vector_data module
+from vector_data import scaled_training_set, scaled_validation_set, preprocessing_qtl
 
-from vector_data import processed_X, preprocessing_qtl
+processed_X=pd.concat([scaled_training_set, scaled_validation_set])
 
 y_full=processed_X['desc']
 
-X_full=processed_X[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'p_lrt', 'chr_num']]
+X_full=processed_X[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num']]
 
 
 class NewColumns2Clustering:
@@ -23,13 +25,13 @@ class NewColumns2Clustering:
     """
     
     def __init__(self, data):
-        self.data=data # use whole dataset
+        self.data=data # use whole dataset without test set
 
     def get_features(self):
         """
         Extract 2 PCA from preprocessing_qtl pipeline
         """
-        preprocessed_data=preprocessing_qtl.fit_transform(self.data)
+        return preprocessing_qtl.fit_transform(self.data)
         
     def get_clusters_labels(raw_predictions_proba):
     
@@ -50,11 +52,11 @@ class NewColumns2Clustering:
         """
         Use neural networks to predict clustering on whole set
         """
-        y_pred_unsup_valid=neural_clustering.predict(data)
+        y_pred_unsup=neural_clustering.predict(data)
         
-        clusters_unsup_valid=get_clusters_labels(y_pred_unsup_valid)
+        clusters_unsup=get_clusters_labels(y_pred_unsup)
         
-        return clusters_unsup_valid
+        return clusters_unsup
 
 
 def main():
