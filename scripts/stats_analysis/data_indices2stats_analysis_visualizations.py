@@ -31,30 +31,46 @@ for line in f_read:
         
 #print('The clusters and elements are: \n', clusters)
 
-
 # Link index to trait category and description
 
 import numpy as np
+import json
+import os
 
-trait_categ_desc={}
-seen=[]
+if os.path.exists('../../../../trait_categ_desc.json'):
 
-tv_data=np.array(training_validation_set)
-#print('tv_data looks like:\n', tv_data[:10])
+    file1=open('../../../../trait_categ_desc.json')
+    json2dict=file1.read()
+    file1.close()
+    
+    trait_categ_desc=json.loads(json2dict)
+    
+else:
 
-len_processing=len(tv_data)
-#print('length', len_processing)
+    trait_categ_desc={}
+    seen=[]
 
-for (index, line) in enumerate(tv_data): # skip header line
-    len_processing -= 1
-    print(f'{len_processing} more to process')
-    chr_num, pos, desc, full_desc = line[0], line[1], line[3], line[4] # chr_num, pos, desc, full_desc are at index 0, 1, 3, 4 respectively
-    if [chr_num, pos, full_desc] not in seen: # strategy to take care of duplicates
-        trait_categ_desc[index]=[int(desc), full_desc] # add only [desc, full_desc] not seen before
-        seen.append([chr_num, pos, full_desc]) # update seen
+    tv_data=np.array(training_validation_set)
+    #print('tv_data looks like:\n', tv_data[:10])
+
+    len_processing=len(tv_data)
+    #print('length', len_processing)
+
+    for (index, line) in enumerate(tv_data): # skip header line
+        len_processing -= 1
+        print(f'{len_processing} more to process')
+        chr_num, pos, desc, full_desc = line[0], line[1], line[3], line[4] # chr_num, pos, desc, full_desc are at index 0, 1, 3, 4 respectively
+        if [chr_num, pos, full_desc] not in seen: # strategy to take care of duplicates
+            trait_categ_desc[str(index)]=[int(desc), full_desc] # add only [desc, full_desc] not seen before
+            seen.append([chr_num, pos, full_desc]) # update seen
+    
+    file2=open('../../../../trait_categ_desc.json', 'w')
+    dict2json=json.dumps(trait_categ_desc)
+    file2.write(dict2json)
+    file2.close()
+
 
 #print('trait_categ_desc', trait_categ_desc)
-#print('seen', seen)
 
     
 #print('The indices and corresponding trait categories are: \n', trait_categ_desc)
@@ -63,15 +79,16 @@ for (index, line) in enumerate(tv_data): # skip header line
 
 clusters_trait_categ_desc={}
 
-for key in clusters.keys():
-    for val in clusters[key]:
-        if key in clusters_trait_categ_desc.keys():
-            clusters_trait_categ_desc[key].append(trait_categ_desc[int(val)]) # append the trait category corresponding to val or index
-        else:
-            clusters_trait_categ_desc[key]=[trait_categ_desc[int(val)]] # replace val or index by the trait category
-                
-#print('The clusters and trait category instances are: \n', clusters_trait_categ_desc)
-
+for cluster in clusters.keys():
+    clusters_trait_categ_desc[cluster]=[]
+    
+    for val in clusters[cluster]:
+        if val not in trait_categ_desc.keys():
+            continue
+        clusters_trait_categ_desc[cluster].append(trait_categ_desc[str(val)]) # append the trait category and description corresponding to val or index
+        
+        
+#print('The clusters and corresponding category and description are: \n', clusters_trait_categ_desc)
 
 # Compute trait category and description frequencies in each cluster
 
@@ -79,16 +96,25 @@ clusters_trait_categ_freq={}
 clusters_trait_desc_freq={}
 
 for cluster in clusters_trait_categ_desc.keys():
+    clusters_trait_categ_freq[cluster]={}
+    clusters_trait_desc_freq[cluster]={}
+    
     traits=clusters_trait_categ_desc[cluster]
+    
     for trait, desc in traits:
-        if trait in clusters_trait_categ_freq.keys(): # check if the trait category already in dictionary of the cluster
+    
+        if trait in clusters_trait_categ_freq[cluster].keys(): # check if the trait category already in dictionary of the cluster
             clusters_trait_categ_freq[cluster][trait] += 1 # add 1 to the count of the trait category if yes
-            clusters_trait_desc_freq[cluster][desc] += 1 # process desc as trait is processed
         else:
             clusters_trait_categ_freq[cluster]={trait:1} # initialize trait with count 1
-            clusters_trait_desc_freq[cluster]={desc:1} # initial desc with count 1 too
+            
     
-#print('The trait category frequencies by cluster are :\n', clusters_trait_categ_freq)  
+        if desc in clusters_trait_desc_freq[cluster].keys():
+            clusters_trait_desc_freq[cluster][desc] += 1 # add 1 to the count of the trait desc if yes
+        else:
+            clusters_trait_desc_freq[cluster]={desc:1} # initial desc with count 1
+            
+print('The trait category frequencies by cluster are :\n', clusters_trait_categ_freq)  
 
 
 # Plot proportion of shared genetic features by trait categories in each cluster

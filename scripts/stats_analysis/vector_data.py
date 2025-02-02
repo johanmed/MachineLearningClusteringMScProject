@@ -37,9 +37,9 @@ training_validation_set=pd.concat([training_set, validation_set]) # useful later
 
 # Remove full_desc
 
-training_set= training_set[['chr_num', 'pos', 'p_lrt', 'desc']]
-validation_set= validation_set[['chr_num', 'pos', 'p_lrt', 'desc']]
-test_set= test_set[['chr_num', 'pos', 'p_lrt', 'desc']]
+training_set= training_set[['chr_num', 'pos', 'p_lrt']]
+validation_set= validation_set[['chr_num', 'pos', 'p_lrt']]
+test_set= test_set[['chr_num', 'pos', 'p_lrt']]
 
 # 3. Plot histogram of training features and assess quality
 
@@ -55,54 +55,7 @@ fig.savefig(os.path.join(out_dir, "Project_Quality_Check_Before_Transformation")
 
 
 
-# 4. Perform OneHotEncoding of trait category
-
-
-from sklearn.preprocessing import OneHotEncoder
-import numpy as np
-
-def hot_encode(X_train, X_valid, X_test):
-    desc_encoder=OneHotEncoder(sparse_output=False)
-    
-    desc_encoder1=desc_encoder.fit_transform((np.array(X_train['desc'])).reshape(-1, 1))
-    X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4']]=desc_encoder1
-    
-    desc_encoder2=desc_encoder.transform((np.array(X_valid['desc'])).reshape(-1, 1))
-    X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4']]=desc_encoder2
-    
-    desc_encoder3=desc_encoder.transform((np.array(X_test['desc'])).reshape(-1, 1))
-    X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4']]=desc_encoder3
-
-    return X_train, X_valid, X_test
-
-
-encoded_training_set, encoded_validation_set, encoded_test_set=hot_encode(training_set, validation_set, test_set)
-
-
-# 5. Extract clusters using OneHotEncoding categories and p_lrt
-
-from sklearn.cluster import KMeans
-
-def perform_clustering_one(X_train, X_valid, X_test):
-    prelim1_clustering=KMeans(n_clusters=5, algorithm='elkan', random_state=2024)
-
-    prelim1_clustering1=prelim1_clustering.fit_transform(np.array(X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt']]).reshape(-1, 5))
-    X_train[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering1
-    
-    prelim1_clustering2=prelim1_clustering.transform(np.array(X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt']]).reshape(-1, 5))
-    X_valid[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering2
-    
-    prelim1_clustering3=prelim1_clustering.transform(np.array(X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt']]).reshape(-1, 5))
-    X_test[['combined_desc_p_lrt1', 'combined_desc_p_lrt2', 'combined_desc_p_lrt3', 'combined_desc_p_lrt4', 'combined_desc_p_lrt5']]=prelim1_clustering3
-
-
-    return X_train, X_valid, X_test
- 
-
-clustered1_training_set, clustered1_validation_set, clustered1_test_set=perform_clustering_one(encoded_training_set, encoded_validation_set, encoded_test_set)
-
-
-# 6. Extract clusters using chr_num and chr_pos
+# 4. Extract clusters using chr_num and chr_pos
 
 def perform_clustering_two(X_train, X_valid, X_test):
     prelim2_clustering=KMeans(n_clusters=5, algorithm='elkan', random_state=2024)
@@ -121,7 +74,7 @@ def perform_clustering_two(X_train, X_valid, X_test):
 
 
 
-clustered2_training_set, clustered2_validation_set, clustered2_test_set=perform_clustering_two(clustered1_training_set, clustered1_validation_set, clustered1_test_set)
+clustered_training_set, clustered_validation_set, clustered_test_set=perform_clustering_two(training_set, validation_set, test_set)
 
 
 # 7. Perform feature engineering
@@ -146,7 +99,7 @@ def scale(X_train, X_valid, X_test):
     return X_train, X_valid, X_test
 
 
-scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered2_training_set, clustered2_validation_set, clustered2_test_set)
+scaled_training_set, scaled_validation_set, scaled_test_set=scale(clustered_training_set, clustered_validation_set, clustered_test_set)
 
 
 # 8. Plot histogram of transformed training features and confirm quality
@@ -165,6 +118,6 @@ from sklearn.decomposition import PCA
 
 custom_preprocessing=Pipeline([('cluster', KMeans(n_clusters=5, algorithm='elkan', random_state=2024)), ('standardize', StandardScaler()), ('reduce', PCA(n_components=2, random_state=2024))])
 
-preprocessing_hits=ColumnTransformer([('one_hot_desc_plrt_chr_num_pos', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
+preprocessing_hits=ColumnTransformer([('plrt_chr_num_pos', custom_preprocessing, ['p_lrt', 'chr_num', 'pos'])], remainder=StandardScaler())
 
-preprocessing_qtl=ColumnTransformer([('one_hot_desc_plrt_chr_num', custom_preprocessing, ['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3','one_hot_desc4', 'p_lrt', 'chr_num'])], remainder=StandardScaler())
+preprocessing_qtl=ColumnTransformer([('plrt_chr_num', custom_preprocessing, ['p_lrt', 'chr_num'])], remainder=StandardScaler())
