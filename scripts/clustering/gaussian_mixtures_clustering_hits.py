@@ -2,7 +2,7 @@
 
 """
 Dependencies: 
-- vector_data.py -> data, preprocessing_hits
+- vector_data_pre.py -> data, preprocessing_hits
 - general_clustering -> ModellingGaussian
 BayesianGaussianMixture is run on training data to get clustering
 Modelling by hits (chromosome number + marker position)
@@ -14,26 +14,20 @@ Modelling by hits (chromosome number + marker position)
 
 import os
 
-from vector_data import scaled_training_set as X_train
-from vector_data import scaled_validation_set as X_valid
-from vector_data import scaled_test_set as X_test
+from vector_data_pre import scaled_training_set as X_train
+from vector_data_pre import scaled_validation_set as X_valid
+from vector_data_pre import scaled_test_set as X_test
 
-from vector_data import preprocessing_hits
+from vector_data_pre import preprocessing_hits
 
 import pandas as pd
 import numpy as np
 
-y_train=X_train['desc']
+X_train=X_train[['p_lrt', 'chr_num', 'pos']]
 
-X_train=X_train[['p_lrt', 'chr_num']]
+X_valid=X_valid[['p_lrt', 'chr_num', 'pos']]
 
-y_valid=X_valid['desc']
-
-X_valid=X_valid[['p_lrt', 'chr_num']]
-
-y_test=X_test['desc']
-
-X_test=X_test[['p_lrt', 'chr_num']]
+X_test=X_test[['p_lrt', 'chr_num', 'pos']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set

@@ -6,18 +6,18 @@ Extract trait categories
 Compute statistics of each trait category for each cluster
 """
 
-# Read file and import training_validation_set
+# 1, Read file and import training_validation_set
 
 f=open('../../../../data_indices_clusters.csv')
 f_read=f.readlines()
 f.close()
 
-from vector_data import training_validation_set
+from vector_data_post import training_validation_set
 
 #print('index length', len(f_read))
 #print('data length', training_validation_set.shape)
 
-# Extract clusters and elements
+# 2. Extract clusters and elements
 
 clusters={}
 
@@ -31,7 +31,7 @@ for line in f_read:
         
 #print('The clusters and elements are: \n', clusters)
 
-# Link index to trait category and description
+# 3. Link index to trait category and description
 
 import numpy as np
 import json
@@ -75,7 +75,7 @@ else:
     
 #print('The indices and corresponding trait categories are: \n', trait_categ_desc)
 
-# Use relationship between index and trait category to get clusters and trait category instances
+# 4. Use relationship between index and trait category to get clusters and trait category instances
 
 clusters_trait_categ_desc={}
 
@@ -90,7 +90,7 @@ for cluster in clusters.keys():
         
 #print('The clusters and corresponding category and description are: \n', clusters_trait_categ_desc)
 
-# Compute trait category and description frequencies in each cluster
+# 5. Compute trait category and description frequencies in each cluster
 
 clusters_trait_categ_freq={}
 clusters_trait_desc_freq={}
@@ -117,7 +117,7 @@ for cluster in clusters_trait_categ_desc.keys():
 print('The trait category frequencies by cluster are :\n', clusters_trait_categ_freq)  
 
 
-# Plot proportion of shared genetic features by trait categories in each cluster
+# 6. Plot proportion of shared genetic features by trait categories in each cluster
 
 import pandas as pd
 import numpy as np
@@ -139,7 +139,7 @@ plt.show()
 fig.savefig('../../output/Association_traits_diabetes_vs_others.png', dpi=500)
 
 
-# Extract description of traits found to be associated, the number of shared genetic features and build collection of traits of interest
+# 7. Extract description of traits found to be associated, the number of shared genetic features and build collection of traits of interest
 
 sample_diabetes_trait_freq=[]
 
@@ -173,7 +173,7 @@ print('The number of traits found associated to diabetes traits are: ', len(desc
 
 print('The collection of traits of interest for network analysis is :\n', collection_traits_interest)
 
-# Plot number of shared genetic features for specific traits with diabetes traits
+# 8. Plot number of shared genetic features for specific traits with diabetes traits
 
 assoc=pd.DataFrame(assoc_desc_freq)
 

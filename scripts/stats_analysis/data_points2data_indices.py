@@ -9,13 +9,11 @@ import pandas as pd
 import tensorflow as tf
 from random import choice
 
-from vector_data import scaled_training_set, scaled_validation_set, preprocessing_qtl
+from vector_data_post import training_validation_set as processed_X
 
-processed_X=pd.concat([scaled_training_set, scaled_validation_set])
+y_full=processed_X['y_qtl']
 
-y_full=processed_X['desc']
-
-X_full=processed_X[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num']]
+X_full=processed_X[['p_lrt', 'chr_num']]
 
 
 class NewColumns2Clustering:

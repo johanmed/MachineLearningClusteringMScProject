@@ -13,34 +13,35 @@ Modelling by hits (chromosome number + marker position)
 
 import os
 
-from vector_data import scaled_training_set as X_train
-from vector_data import scaled_validation_set as X_valid
-from vector_data import scaled_test_set as X_test
+from vector_data_post import scaled_training_set as X_train
+from vector_data_post import scaled_validation_set as X_valid
+from vector_data_post import scaled_test_set as X_test
 
-from vector_data import preprocessing_hits
+from vector_data_pre import preprocessing_hits
 
 import numpy as np
 import pandas as pd
 
-y_train=X_train['desc']
+y_train=X_train['y_hits']
 
-X_train=X_train[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
+X_train=X_train[['p_lrt', 'chr_num', 'pos']]
 
-y_valid=X_valid['desc']
+y_valid=X_valid['y_hits']
 
-X_valid=X_valid[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
+X_valid=X_valid[['p_lrt', 'chr_num', 'pos']]
 
-y_test=X_test['desc']
+y_test=X_test['y_hits']
 
-X_test=X_test[['one_hot_desc1', 'one_hot_desc2', 'one_hot_desc3', 'one_hot_desc4', 'p_lrt', 'chr_num', 'pos']]
+X_test=X_test[['p_lrt', 'chr_num', 'pos']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
 
+y_train_full=pd.concat([y_train, y_valid])
 
 # 2. Select the 2 columns, do clustering and plot
 
-import tensorflow as tf # import DBSCAN class for clustering
+import tensorflow as tf
 import matplotlib.pyplot as plt # import plot manager
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import silhouette_score
@@ -158,7 +159,7 @@ def main():
 
     else:
     
-        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=2, overwrite=True, directory='deep_learning_clustering_hits', project_name='hyperband')
+        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=2, hyperband_iterations=2, overwrite=True, directory='deep_learning_clustering_hits', project_name='hyperband')
         
         checkpoint_cb = tf.keras.callbacks.ModelCheckpoint('deep_learning_clustering_hits/best_checkpoint.keras', save_best_only=True)
 
@@ -174,10 +175,9 @@ def main():
         
         best_model.save('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
         
-        best_trial=hyperband_tuner.oracle.get_best_trials(num_trials=1)[0]
         
-        print('The best trial has the following parameters:\n', best_trial.summary())
-
+        
+        
     actual_clustering=clustering_task.perform_neural_clustering(best_model, X_valid_features, y_train, y_valid)
 
     #Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)

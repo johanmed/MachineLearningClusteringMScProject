@@ -4,7 +4,7 @@
 Summary:
 This script contains code to run KMeans clustering algorithm on data
 Dependencies:
-- vector_data.py -> data, preprocessing_qtl
+- vector_data_pre.py -> data, preprocessing_qtl
 - general_clustering -> ModellingKMeans
 KMeans is run twice:
 1. Identify the best number of clusters for the data using the training data
@@ -18,24 +18,18 @@ Modelling by QTL (chromosome number)
 
 import os
 
-from vector_data import scaled_training_set as X_train
-from vector_data import scaled_validation_set as X_valid
-from vector_data import scaled_test_set as X_test
+from vector_data_pre import scaled_training_set as X_train
+from vector_data_pre import scaled_validation_set as X_valid
+from vector_data_pre import scaled_test_set as X_test
 
-from vector_data import preprocessing_qtl
+from vector_data_pre import preprocessing_qtl
 
 import pandas as pd
 import numpy as np
 
-y_train=X_train['desc']
-
 X_train=X_train[['p_lrt', 'chr_num']]
 
-y_valid=X_valid['desc']
-
 X_valid=X_valid[['p_lrt', 'chr_num']]
-
-y_test=X_test['desc']
 
 X_test=X_test[['p_lrt', 'chr_num']]
 

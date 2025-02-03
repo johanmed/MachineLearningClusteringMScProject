@@ -13,30 +13,31 @@ Modelling by qtl (chromosome number)
 
 import os
 
-from vector_data import scaled_training_set as X_train
-from vector_data import scaled_validation_set as X_valid
-from vector_data import scaled_test_set as X_test
+from vector_data_post import scaled_training_set as X_train
+from vector_data_post import scaled_validation_set as X_valid
+from vector_data_post import scaled_test_set as X_test
 
-from vector_data import preprocessing_qtl
+from vector_data_pre import preprocessing_qtl
 
 import numpy as np
 import pandas as pd
 
-y_train=X_train['desc']
+y_train=X_train['y_qtl']
 
 X_train=X_train[['p_lrt', 'chr_num']]
 
-y_valid=X_valid['desc']
+y_valid=X_valid['y_qtl']
 
 X_valid=X_valid[['p_lrt', 'chr_num']]
 
-y_test=X_test['desc']
+y_test=X_test['y_qtl']
 
 X_test=X_test[['p_lrt', 'chr_num']]
 
 
 X_train_full= pd.concat([X_train, X_valid]) # define bigger training set to train model on before going to test set
 
+y_train_full=pd.concat([y_train, y_valid])
 
 # 2. Select the 2 columns, do clustering and plot
 
@@ -159,7 +160,7 @@ def main():
         
     else:
     
-        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=3, hyperband_iterations=2, overwrite=True, directory='deep_learning_clustering_qtl', project_name='hyperband')
+        hyperband_tuner=kt.Hyperband(MyClusteringTaskTuning(), objective='val_accuracy', seed=2024, max_epochs=10, factor=2, hyperband_iterations=2, overwrite=True, directory='deep_learning_clustering_qtl', project_name='hyperband')
         
         checkpoint_cb = tf.keras.callbacks.ModelCheckpoint('deep_learning_clustering_qtl/best_checkpoint.keras', save_best_only=True)
     
@@ -175,11 +176,9 @@ def main():
         
         best_model.save('deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
         
-        best_trial=hyperband_tuner.oracle.get_best_trials(num_trials=1)[0]
-        
-        print('The best trial has the following parameters:\n', best_trial.summary())
 
-    actual_clustering=clustering_task.perform_neural_clustering(best_model, X_valid_features, y_train, y_valid)
+
+    actual_clustering=clustering_task.perform_neural_clustering(best_model, X_valid_features)
 
     #Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 
