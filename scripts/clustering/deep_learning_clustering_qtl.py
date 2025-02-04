@@ -24,13 +24,19 @@ import pandas as pd
 
 y_train=X_train['y_qtl']
 
+desc_train=X_train['desc']
+
 X_train=X_train[['p_lrt', 'chr_num']]
 
 y_valid=X_valid['y_qtl']
 
+desc_valid=X_valid['desc']
+
 X_valid=X_valid[['p_lrt', 'chr_num']]
 
 y_test=X_test['y_qtl']
+
+desc_test=X_test['desc']
 
 X_test=X_test[['p_lrt', 'chr_num']]
 
@@ -110,12 +116,12 @@ class Columns2Clustering:
         return clusters_unsup
         
     
-    def visualize_plot(neural_clustering, X_train, get_clusters_labels, size=500):
+    def visualize_plot(neural_clustering, X, get_clusters_labels, size=500):
         """
         Generate actual visualization of clusters
         Save figure
         """
-        y_pred_unsup_train=neural_clustering.predict(X_train)
+        y_pred_unsup_train=neural_clustering.predict(X)
         
         #print('The probabilities of clusters assignment are: ', y_pred_unsup_train[:10])
         
@@ -124,11 +130,22 @@ class Columns2Clustering:
         #print('The silhouette score obtained as clustering performance measure on training set is:', silhouette_score(X_train, clusters_unsup_train))
         
         plt.figure(figsize=(10, 10))
-        plt.scatter(X_train[:, 0], X_train[:, 1], c=clusters_unsup_train)
+        plt.scatter(X[:, 0], X[:, 1], c=clusters_unsup_train)
         plt.xlabel("PC 1", fontsize=10)
         plt.ylabel("PC 2", fontsize=10, rotation=90)
         plt.savefig(os.path.join(out_dir, f"Deep_learning_clustering_result_by_qtl"), dpi=500)
         
+    
+    def annotate_plot(neural_clustering, X, desc, size=500):
+        """
+        Annotate plot with trait categories
+        Save figure
+        """
+        plt.figure(figsize=(10, 10))
+        plt.scatter(X[:, 0], X[:, 1], c=list(desc))
+        plt.xlabel("PC 1", fontsize=10)
+        plt.ylabel("PC 2", fontsize=10, rotation=90)
+        plt.savefig(os.path.join(out_dir, f"Deep_learning_clustering_annotated_result_by_hits"), dpi=500)
         
      
     def predict_neural_clustering(neural_clustering, X_valid, get_clusters_labels):
@@ -183,6 +200,8 @@ def main():
     #Columns2Clustering.visualize_plot(actual_clustering[1], X_train_features, Columns2Clustering.get_clusters_labels)
 
     Columns2Clustering.visualize_plot(actual_clustering[1], X_valid_features, Columns2Clustering.get_clusters_labels)
+    
+    Columns2Clustering.annotate_plot(actual_clustering[1], X_valid_features, desc_valid)
 
     prediction_clusters=Columns2Clustering.predict_neural_clustering(actual_clustering[1], X_valid_features, Columns2Clustering.get_clusters_labels)
 
