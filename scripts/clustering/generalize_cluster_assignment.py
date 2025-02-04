@@ -15,7 +15,7 @@ import os
 
 # 1. Read in original data
 
-full_X_rec=pd.read_csv('../../../../project_dataset_all_traits_p_lrt_filtered.csv', usecols=['chr_num', 'pos', 'p_lrt'])
+full_X_rec=pd.read_csv('../../../../project_dataset_all_traits_p_lrt_filtered.csv', usecols=['chr_num', 'pos', 'p_lrt', 'desc'])
 
 #print('full_X_rec looks like: \n', full_X_rec)
 
