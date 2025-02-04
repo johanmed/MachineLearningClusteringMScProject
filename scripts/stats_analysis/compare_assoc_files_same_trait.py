@@ -146,25 +146,30 @@ fig.savefig('../../output/Proportion_traits_with_differences.png', dpi=500)
 # Plot vertical bar plot of proportion of differences for all traits with differences in association results
 
 
+def sort_second_el_len(seq):
+    return len(seq[1])
+
+sorted_results=sorted(results.items(), key=sort_second_el_len, reverse=True)
+
+top20_results=[pair[0] for pair in sorted_results[1:21] if type(pair[0])==str and len(pair[0]) >= 5] # omit nan
+
+#print(top20_results)
+
+freq_top20_results=[len(results[key]) for key in top20_results]
+
+top20_results = [' '.join(desc.split(' ')[1:6]) for desc in top20_results]
+
+
+
 fig, ax=plt.subplots(figsize=(20, 20))
 
-diff_traits= [j[3:] for j in results.keys() if (j != '0' or j != '1' or j != '2' or j != '3') and len(j.split(' '))<=5] # remove trait category from string and select traits with short names
-rand_traits=np.random.choice(diff_traits, 20)
+data=pd.DataFrame(freq_top20_results, index=top20_results) # use the number of differences in each trait to determine the width of each bar
 
-freq_rand_traits=[]
+data.plot.barh(ax=ax, color='black', alpha=0.7, legend=False)
 
-for el in rand_traits:
-    for key in results.keys():
-        if el in key:
-            freq_rand_traits.append(len(results[key]))
+ax.set_xlabel('Number of differences at genomic locations', fontsize=15)
 
-data=pd.DataFrame(freq_rand_traits, index=rand_traits) # use the number of differences in each trait to determine the width of each bar
-
-data.plot.barh(ax=ax, color='black', alpha=0.7, legend=False, position=1)
-
-ax.set_xlabel('Number of differences at genomic locations')
-
-ax.set_title('Proportion of differences in association results for a random selection of 20 problematic traits')
+ax.set_title('Proportion of differences in association results for the top 20 traits', fontsize=20)
 
 plt.show()
 
