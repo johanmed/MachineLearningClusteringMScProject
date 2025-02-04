@@ -11,9 +11,11 @@ from random import choice
 
 from vector_data_post import training_validation_set as processed_X
 
-y_full=processed_X['y_qtl']
+from vector_data_pre import preprocessing_hits
 
-X_full=processed_X[['p_lrt', 'chr_num']]
+y_full=processed_X['y_hits']
+
+X_full=processed_X[['p_lrt', 'chr_num', 'pos']]
 
 
 class NewColumns2Clustering:
@@ -27,9 +29,9 @@ class NewColumns2Clustering:
 
     def get_features(self):
         """
-        Extract 2 PCA from preprocessing_qtl pipeline
+        Extract 2 PCA from preprocessing_hits pipeline
         """
-        return preprocessing_qtl.fit_transform(self.data)
+        return preprocessing_hits.fit_transform(self.data)
         
     def get_clusters_labels(raw_predictions_proba):
     
@@ -63,9 +65,9 @@ def main():
 
     X_full_features=clustering_task.get_features() # get preprocessed features for whole dataset
     
-    if os.path.exists('../clustering/deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras'):
+    if os.path.exists('../clustering/deep_learning_clustering_hits/best_checkpoint.keras'):
         
-        best_model=tf.keras.models.load_model('../clustering/deep_learning_clustering_qtl/best_clustering_model_by_qtl.keras')
+        best_model=tf.keras.models.load_model('../clustering/deep_learning_clustering_hits/best_checkpoint.keras')
         
         prediction_clusters=NewColumns2Clustering.predict_neural_clustering(best_model, X_full_features, NewColumns2Clustering.get_clusters_labels)
         

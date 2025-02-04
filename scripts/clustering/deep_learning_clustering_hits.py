@@ -151,11 +151,11 @@ def main():
 
     X_train_features, X_valid_features, X_test_features=clustering_task.get_features()
     
-    if os.path.exists('deep_learning_clustering_hits/best_clustering_model_by_hits.keras'):
+    if os.path.exists('deep_learning_clustering_hits/best_checkpoint.keras'):
         
         print('The model has already been trained and saved on disk!')
         
-        best_model=tf.keras.models.load_model('deep_learning_clustering_hits/best_clustering_model_by_hits.keras')
+        best_model=tf.keras.models.load_model('deep_learning_clustering_hits/best_checkpoint.keras')
 
     else:
     

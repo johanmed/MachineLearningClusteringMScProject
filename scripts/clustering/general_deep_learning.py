@@ -22,7 +22,6 @@ class MyClusteringTaskTuning(kt.HyperModel):
         learning_rate=hp.Float('learning_rate', min_value=1e-4, max_value=1e-1, sampling='log')
         optimizer=hp.Choice('optimizer', values=['sgd', 'adam'])
         hidden_activation_func=hp.Choice('hidden_activation_func', values=['relu', 'leaky_relu', 'elu', 'gelu', 'swish', 'mish'])
-        n_clusters=hp.Int('n_clusters', min_value=2, max_value=10)
         
         if optimizer=='sgd':
             optimizer=tf.keras.optimizers.SGD(learning_rate=learning_rate)
@@ -35,7 +34,7 @@ class MyClusteringTaskTuning(kt.HyperModel):
             hidden_layers_dict[h]=tf.keras.layers.Dense(units=n_neurons, kernel_initializer='he_normal', activation=hidden_activation_func)
             
         concat_layer=tf.keras.layers.Concatenate()
-        output_layer=tf.keras.layers.Dense(units=n_clusters+1, activation='softmax') # number of clusters set to 5 here
+        output_layer=tf.keras.layers.Dense(units=3, activation='softmax') # 3 clusters found by both birch hits and birch qtl
         
         layers={}
         layers['input_unsup']=tf.keras.layers.Input(shape=(2,))

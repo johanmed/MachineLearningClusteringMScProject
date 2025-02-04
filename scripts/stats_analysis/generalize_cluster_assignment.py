@@ -35,24 +35,24 @@ def predict_cluster(full_X_rec, preprocessing_type, model):
 
 # 2. Use birch hits and qtl models to extract clusters
 
-if os.path.exists('birch_clustering/birch_clustering_hits.pkl'):
+if os.path.exists('../clustering/birch_clustering/birch_clustering_hits.pkl'):
 
-    model_birch=joblib.load('birch_clustering/birch_clustering_hits.pkl')
+    model_birch=joblib.load('../clustering/birch_clustering/birch_clustering_hits.pkl')
     
     y_birch_hits=predict_cluster(full_X_rec, preprocessing_hits, model_birch)
     
     full_X_rec['y_hits']=y_birch_hits
 
 
-if os.path.exists('birch_clustering/birch_clustering_qtl.pkl'):
+if os.path.exists('../clustering/birch_clustering/birch_clustering_qtl.pkl'):
     
-    model_birch=joblib.load('birch_clustering/birch_clustering_qtl.pkl')
+    model_birch=joblib.load('../clustering/birch_clustering/birch_clustering_qtl.pkl')
     
     y_birch_qtl=predict_cluster(full_X_rec, preprocessing_hits, model_birch)
     
     full_X_rec['y_qtl']=y_birch_qtl
 
 
-#print('Extended full_X_rec looks like:\n', full_X_rec)
+#print('Extended full_X_rec looks like:\n', full_data)
 
 

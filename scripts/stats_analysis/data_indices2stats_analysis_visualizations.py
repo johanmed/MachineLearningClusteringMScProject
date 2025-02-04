@@ -87,34 +87,40 @@ for cluster in clusters.keys():
             continue
         clusters_trait_categ_desc[cluster].append(trait_categ_desc[str(val)]) # append the trait category and description corresponding to val or index
         
-        
+
 #print('The clusters and corresponding category and description are: \n', clusters_trait_categ_desc)
+
 
 # 5. Compute trait category and description frequencies in each cluster
 
 clusters_trait_categ_freq={}
 clusters_trait_desc_freq={}
 
-for cluster in clusters_trait_categ_desc.keys():
-    clusters_trait_categ_freq[cluster]={}
-    clusters_trait_desc_freq[cluster]={}
+for cluster in sorted(clusters_trait_categ_desc.keys()):
+    
+    interm_trait={}
+    interm_desc={}
     
     traits=clusters_trait_categ_desc[cluster]
     
     for trait, desc in traits:
     
-        if trait in clusters_trait_categ_freq[cluster].keys(): # check if the trait category already in dictionary of the cluster
-            clusters_trait_categ_freq[cluster][trait] += 1 # add 1 to the count of the trait category if yes
+        if trait in interm_trait.keys(): # check if the trait category already in dictionary of the cluster
+            interm_trait[trait] += 1 # add 1 to the count of the trait category if yes
         else:
-            clusters_trait_categ_freq[cluster]={trait:1} # initialize trait with count 1
+            interm_trait[trait] = 1 # initialize trait with count 1
             
     
-        if desc in clusters_trait_desc_freq[cluster].keys():
-            clusters_trait_desc_freq[cluster][desc] += 1 # add 1 to the count of the trait desc if yes
+        if desc in interm_desc.keys():
+            interm_desc[desc] += 1 # add 1 to the count of the trait desc if yes
         else:
-            clusters_trait_desc_freq[cluster]={desc:1} # initial desc with count 1
-            
-print('The trait category frequencies by cluster are :\n', clusters_trait_categ_freq)  
+            interm_desc[desc] = 1 # initial desc with count 1
+    
+    clusters_trait_categ_freq[cluster] = interm_trait
+    clusters_trait_desc_freq[cluster] = interm_desc
+
+
+#print('The trait category frequencies by cluster are :\n', clusters_trait_categ_freq)  
 
 
 # 6. Plot proportion of shared genetic features by trait categories in each cluster
@@ -123,7 +129,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+np.random.seed(2024)
+
 clusters_traits=pd.DataFrame(clusters_trait_categ_freq)
+
 clusters_traits_transposed=clusters_traits.transpose()
 
 fig, ax = plt.subplots(figsize=(20, 10))
@@ -132,14 +141,21 @@ clusters_traits_transposed.plot.bar(ax=ax)
 
 ax.set_ylabel('Number of shared genetic features')
 
+ax.set_xlabel('Clusters')
+
 ax.set_title('Proportion of shared genetic features by trait categories in each cluster')
+
+ax.legend(['Immune trait', 'Undetermined', 'Diabetes trait', 'Gastrointestinal trait'])
 
 plt.show()
 
 fig.savefig('../../output/Association_traits_diabetes_vs_others.png', dpi=500)
 
 
+
 # 7. Extract description of traits found to be associated, the number of shared genetic features and build collection of traits of interest
+
+# Get mean and std of trait category frequencies
 
 sample_diabetes_trait_freq=[]
 
@@ -150,6 +166,20 @@ for cluster in clusters_trait_categ_freq.keys():
 mean_df=np.mean(sample_diabetes_trait_freq) # compute mean of number of genetic features for diabetes traits over sample
 std_df=np.std(sample_diabetes_trait_freq) # compute standard deviation of number of genetic features for diabetes traits over sample
 
+# Get median of trait description frequencies
+
+sample_trait_desc_freq=[]
+
+for cluster in clusters_trait_desc_freq.keys():
+    descs=clusters_trait_desc_freq[cluster]
+    for desc in descs.keys():
+        sample_trait_desc_freq.append(descs[desc])
+        
+mean_freq=np.mean(sample_trait_desc_freq)
+std_freq=np.std(sample_trait_desc_freq)
+
+#print('threshold set: ', mean_freq + std_freq)
+
 assoc_desc_freq={}
 
 collection_traits_interest=[]
@@ -157,27 +187,49 @@ collection_traits_interest=[]
 for cluster in clusters_trait_desc_freq.keys():
     descs=clusters_trait_desc_freq[cluster]
     categs=clusters_trait_categ_freq[cluster]
+    vals=clusters_trait_categ_desc[cluster]
+    container=[]
+    
     if mean_df - std_df <= categs[0] <= mean_df + std_df: # discard cluster where number of genetic features for diabetes traits are beyond range estimated
         for desc in descs.keys():
-            if [1, desc] in trait_categ_desc.values() or [2, desc] in trait_categ_desc.values() or [3, desc] in trait_categ_desc.values(): # select only traits not related to diabetes
+            if ([1, desc] in vals or [2, desc] in vals or [3, desc] in vals) and descs[desc] > mean_freq + std_freq: # select only traits not related to diabetes
                 if desc in assoc_desc_freq.keys():
-                    assoc_desc_freq[desc] += 1
+                    assoc_desc_freq[desc] += descs[desc] # update frequency according to descs[desc]
                 else:
-                    assoc_desc_freq[desc]= 1
-                    
-                collection_traits_interest.append(desc) # add traits non related to diabetes to collection
-            else:
-                collection_traits_interest.append(desc) # add diabetes traits to collection
+                    assoc_desc_freq[desc] = descs[desc] # set the frequency to descs[desc]
                 
-print('The number of traits found associated to diabetes traits are: ', len(desc_freq.keys()))
+                container.append(desc)
+                
+            elif descs[desc] > mean_freq + std_freq:
+                
+                container.append(desc)
+            
+    collection_traits_interest.append(container)
+                
+#print('The number of traits found associated to diabetes traits are: ', len(assoc_desc_freq.keys()))
 
-print('The collection of traits of interest for network analysis is :\n', collection_traits_interest)
+#print('The traits found associated to diabetes traits are: ', assoc_desc_freq)
 
-# 8. Plot number of shared genetic features for specific traits with diabetes traits
+#print('The collection of traits of interest for network analysis is :\n', collection_traits_interest)
 
-assoc=pd.DataFrame(assoc_desc_freq)
 
-fig, ax = plt.subplots(figsize=(20, 10))
+
+# 8. Plot number of shared genetic features for selection of specific traits with diabetes traits
+
+sel_assoc_desc=[]
+
+for desc in assoc_desc_freq.keys():
+    #print('desc is: ', desc)
+    if type(desc)==str and len(desc.split(' '))<=7: # prefer trait description of length <=7 for ease of labeling on plot
+        sel_assoc_desc.append(desc)
+
+rand_assoc_desc=np.random.choice(sel_assoc_desc, 20)
+
+freq_rand_assoc_desc=[assoc_desc_freq[key] for key in rand_assoc_desc]
+
+assoc=pd.DataFrame(freq_rand_assoc_desc, index=rand_assoc_desc)
+
+fig, ax = plt.subplots(figsize=(20, 20))
 
 assoc.plot.barh(ax=ax, legend=False, color='black', alpha=0.7)
 
@@ -187,5 +239,5 @@ ax.set_title('Proportion of genetic features shared by specific associated trait
 
 plt.show()
 
-fig.savefig('../../output/Proportion_genetic_features_shared_specific_traits.png', dpi=500)
+fig.savefig('../../output/Proportion_genetic_features_shared_selection_specific_traits.png', dpi=500)
 
